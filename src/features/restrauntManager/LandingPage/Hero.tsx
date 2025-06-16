@@ -2,11 +2,10 @@ import { CheckCircle, Star, TrendingUp, Users } from "lucide-react";
 import { useNavigate } from "react-router";
 
 const Hero: React.FC = () => {
-
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const handleRegister = () => {
-    navigate("/restaurant-manager/info")
-  }
+    navigate("/manager/register");
+  };
 
   return (
     <section className="relative bg-gradient-to-br from-orange-50 to-red-50 pt-20 pb-16 overflow-hidden">
@@ -35,7 +34,10 @@ const Hero: React.FC = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <button onClick={handleRegister} className="bg-orange-500 text-white px-8 py-4 rounded-lg hover:bg-orange-600 transition-all transform hover:scale-105 font-medium text-lg shadow-lg">
+              <button
+                onClick={handleRegister}
+                className="bg-orange-500 text-white px-8 py-4 rounded-lg hover:bg-orange-600 transition-all transform hover:scale-105 font-medium text-lg shadow-lg"
+              >
                 Register Your Restaurant
               </button>
               {/* <button className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-lg hover:border-orange-500 hover:text-orange-500 transition-colors font-medium text-lg">

@@ -24,7 +24,9 @@ const FileUploadCard: React.FC<FileUploadCardProps> = ({
         type="file"
         id={fileKey}
         accept={accept}
-        onChange={(e) => e.target.files?.[0] && onFileUpload(fileKey, e.target.files[0])}
+        onChange={(e) =>
+          e.target.files?.[0] && onFileUpload(fileKey, e.target.files[0])
+        }
         className="hidden"
       />
       <label htmlFor={fileKey} className="cursor-pointer">

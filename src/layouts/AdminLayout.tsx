@@ -2,7 +2,6 @@ import { Outlet } from "react-router-dom";
 import Sidebar from "../features/auth/components/Sidebar";
 import Header from "../features/auth/components/Header";
 import { useState } from "react";
-import React from "react";
 
 const AdminLayout = () => {
   const [isSideBarOpen, setIsSideBarOpen] = useState(false);

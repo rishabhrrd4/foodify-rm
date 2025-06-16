@@ -35,7 +35,7 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
   };
 
   const handleRegister = () => {
-    navigate("/restaurant-manager/info");
+    navigate("/manager/register");
   };
 
   return (

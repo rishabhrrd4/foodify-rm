@@ -6,7 +6,6 @@ import Step1BasicInfo from "./RestaurantRegistration/Step1BasicInfo";
 import Step2MenuDetails from "./RestaurantRegistration/Step2MenuDetails";
 import Step3Documents from "./RestaurantRegistration/Step3Documents";
 import Step4Payment from "./RestaurantRegistration/Step4Payment";
-// import FileUploadCard from "./RestaurantRegistration/FileUploadCard"; // Although passed as prop, still imported for clarity of structure
 import DocumentNotes from "./RestaurantRegistration/DocumentNotes";
 import ReferralSection from "./RestaurantRegistration/ReferralSection";
 import type { FormData, UploadedFiles } from "../../../types";
@@ -196,21 +195,16 @@ const RestaurantRegistration: React.FC = () => {
                 <button
                   onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
                   disabled={currentStep === 1}
-                  className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-orange-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Previous
                 </button>
                 <button
                   onClick={() => {
                     if (currentStep === steps.length) {
-                      navigate("/auth/login"); // Redirect to login after submission
-                    }
-                    if (currentStep < steps.length) {
-                      setCurrentStep(currentStep + 1);
+                      navigate("/auth/login");
                     } else {
-                      alert(
-                        "Registration completed! Your application will be reviewed within 24 hours."
-                      );
+                      setCurrentStep(currentStep + 1);
                     }
                   }}
                   className="px-8 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"

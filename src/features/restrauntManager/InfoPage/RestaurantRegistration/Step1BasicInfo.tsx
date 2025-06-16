@@ -35,10 +35,7 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
         />
       </div>
 
-      <OwnerDetails 
-        formData={formData} 
-        onInputChange={onInputChange} 
-      />
+      <OwnerDetails formData={formData} onInputChange={onInputChange} />
 
       <AddressSection
         formData={formData}

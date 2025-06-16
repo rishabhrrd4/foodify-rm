@@ -23,7 +23,7 @@ const ErrorPage = () => {
               className="w-full h-64 object-contain mx-auto"
             />
           </figure>
-          
+
           <div className="space-y-3 mb-8">
             <h1 className="text-3xl font-bold text-gray-800">Page Not Found</h1>
             <p className="text-gray-600">
@@ -56,7 +56,9 @@ const ErrorPage = () => {
   return (
     <section className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
       <div className="max-w-md w-full bg-white rounded-xl shadow-lg overflow-hidden p-8 text-center">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">Something Went Wrong</h1>
+        <h1 className="text-3xl font-bold text-gray-800 mb-4">
+          Something Went Wrong
+        </h1>
         <p className="text-gray-600 mb-6">
           {error.message || "An unexpected error occurred"}
         </p>

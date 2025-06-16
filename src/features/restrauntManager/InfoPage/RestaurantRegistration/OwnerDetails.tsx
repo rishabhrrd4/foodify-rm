@@ -6,12 +6,16 @@ interface OwnerDetailsProps {
   onInputChange: (field: keyof FormData, value: any) => void;
 }
 
-const OwnerDetails: React.FC<OwnerDetailsProps> = ({ formData, onInputChange }) => {
+const OwnerDetails: React.FC<OwnerDetailsProps> = ({
+  formData,
+  onInputChange,
+}) => {
   return (
     <div>
       <h3 className="text-xl font-semibold mb-2">Owner details</h3>
       <p className="text-gray-600 mb-4">
-        Platform will use these details for all business communications and updates
+        Platform will use these details for all business communications and
+        updates
       </p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input
@@ -57,14 +61,16 @@ const OwnerDetails: React.FC<OwnerDetailsProps> = ({ formData, onInputChange }) 
           Restaurant's primary contact number
         </h3>
         <p className="text-gray-600 mb-4">
-          Customers, delivery partners and platform may call on this
-          number for order support
+          Customers, delivery partners and platform may call on this number for
+          order support
         </p>
         <label className="flex items-center mb-3 text-sm">
           <input
             type="checkbox"
             checked={formData.primaryContactSame}
-            onChange={(e) => onInputChange("primaryContactSame", e.target.checked)}
+            onChange={(e) =>
+              onInputChange("primaryContactSame", e.target.checked)
+            }
             className="mr-2 w-4 h-4 text-orange-600"
           />
           Same as owner mobile number

@@ -1,9 +1,9 @@
 // src/store/index.ts
-import { configureStore } from '@reduxjs/toolkit';
-import authReducer from './slices/authSlice';
-import menuReducer from './slices/menuSlice';
-import orderReducer from './slices/orderSlice';
-import restaurantReducer from './slices/restaurantSlice';
+import { configureStore } from "@reduxjs/toolkit";
+import authReducer from "./slices/authSlice";
+import menuReducer from "./slices/menuSlice";
+import orderReducer from "./slices/orderSlice";
+import restaurantReducer from "./slices/restaurantSlice";
 
 export const store = configureStore({
   reducer: {

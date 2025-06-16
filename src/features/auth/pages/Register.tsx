@@ -305,7 +305,7 @@ const RegisterPage: React.FC = () => {
               </div>
             </div> */}
 
-            <div> 
+            <div>
               <button
                 type="submit"
                 disabled={isLoading}

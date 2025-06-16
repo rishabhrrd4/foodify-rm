@@ -22,7 +22,7 @@ const Step2MenuDetails: React.FC<Step2MenuDetailsProps> = ({
 }) => {
   return (
     <div className="space-y-8">
-      <CuisineSelection 
+      <CuisineSelection
         cuisineTypes={formData.cuisineTypes}
         onCuisineToggle={(cuisine) => {
           onInputChange(

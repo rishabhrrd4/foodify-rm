@@ -1,7 +1,6 @@
 import { Outlet } from "react-router-dom";
 import Footer from "../features/auth/components/Footer";
 import Header from "../features/auth/components/Header";
-import React from "react";
 
 const AppLayout = () => {
   return (

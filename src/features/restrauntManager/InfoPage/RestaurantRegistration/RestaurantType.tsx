@@ -13,9 +13,7 @@ const RestaurantType: React.FC<RestaurantTypeProps> = ({
   return (
     <div>
       <h3 className="text-xl font-semibold mb-2">Restaurant Type</h3>
-      <p className="text-gray-600 mb-4">
-        What type of restaurant is this?
-      </p>
+      <p className="text-gray-600 mb-4">What type of restaurant is this?</p>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {restaurantTypes.map((type) => (
           <button

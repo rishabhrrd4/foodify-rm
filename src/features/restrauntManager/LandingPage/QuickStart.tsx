@@ -11,7 +11,7 @@ const QuickStart: React.FC = () => {
 
   const navigate = useNavigate();
   const handleRegister = () => {
-    navigate("/restaurant-manager/info");
+    navigate("/manager/register");
   };
 
   return (

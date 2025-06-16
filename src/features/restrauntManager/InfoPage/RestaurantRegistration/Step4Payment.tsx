@@ -57,8 +57,8 @@ const Step4Payment: React.FC<Step4PaymentProps> = ({
             <label className="flex items-start space-x-2">
               <input type="checkbox" className="mt-1" required />
               <span>
-                I agree to the platform's terms and conditions for
-                restaurant partners
+                I agree to the platform's terms and conditions for restaurant
+                partners
               </span>
             </label>
             <label className="flex items-start space-x-2">

@@ -5,7 +5,9 @@ interface ReferralSectionProps {
   onReferralClick: () => void;
 }
 
-const ReferralSection: React.FC<ReferralSectionProps> = ({ onReferralClick }) => {
+const ReferralSection: React.FC<ReferralSectionProps> = ({
+  onReferralClick,
+}) => {
   return (
     <>
       <div className="mt-8 p-4 bg-orange-50 rounded-lg">

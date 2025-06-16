@@ -6,7 +6,10 @@ interface StepsProgressProps {
   currentStep: number;
 }
 
-const StepsProgress: React.FC<StepsProgressProps> = ({ steps, currentStep }) => {
+const StepsProgress: React.FC<StepsProgressProps> = ({
+  steps,
+  currentStep,
+}) => {
   return (
     <div className="space-y-4">
       {steps.map((step) => (

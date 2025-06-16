@@ -28,6 +28,11 @@ import OrderHistory from "../features/restaurants/pages/OrderHistory";
 import RestaurantInfo from "../features/restaurants/pages/RestaurantInfo";
 import Notifications from "../features/restaurants/pages/Notifications";
 
+// Manager login/signup pages
+import ManagerLoginPage from "../features/manager/Login";
+import ManagerSignupPage from "../features/manager/Register";
+import RestaurantRegistration from "../features/restrauntManager/InfoPage/RestaurantForm";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -38,15 +43,23 @@ const router = createBrowserRouter([
       { path: "place-order", element: <PlaceOrderPage /> },
       { path: "place-order/order-status", element: <OrderStatusPage /> },
       { path: "order-history", element: <OrderHistoryPage /> },
-      { path: "login", element: <Login /> }, // General login
+      { path: "login", element: <Login /> }, // restaurant login
     ],
   },
   {
     path: "/auth",
     element: <AuthLayout />,
     children: [
-      { path: "login", element: <Login /> },
-      { path: "register", element: <Register /> },
+      { path: "login", element: <Login /> }, // restaurant login
+      { path: "register", element: <Register /> }, // restaurant register
+    ],
+  },
+  {
+    path: "/manager",
+    element: <AuthLayout />,
+    children: [
+      { path: "login", element: <ManagerLoginPage /> },
+      { path: "register", element: <ManagerSignupPage /> },
     ],
   },
   {
@@ -58,11 +71,26 @@ const router = createBrowserRouter([
     ],
   },
 
-  { path: "/restaurant-manager", element: <RestaurantManagerLanding /> },
-  { path: "/restaurant-manager/register", element: <Register /> },
-  { path: "/restaurant-manager/info", element: <RestaurantForm /> },
-  { path: "/restaurant-manager/refer-form", element: <ReferralForm /> },
-  { path: "/restaurant-manager/login", element: <Login /> }, // manager login
+  {
+    path: "/restaurant-manager",
+    element: <RestaurantManagerLanding />,
+  },
+  {
+    path: "/restaurant-manager/register",
+    element: <RestaurantRegistration />,
+  },
+  {
+    path: "/restaurant-manager/info",
+    element: <RestaurantForm />,
+  },
+  {
+    path: "/restaurant-manager/refer-form",
+    element: <ReferralForm />,
+  },
+  {
+    path: "/restaurant-manager/login",
+    element: <ManagerLoginPage />,
+  },
 
   {
     path: "/restaurant",

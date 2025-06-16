@@ -33,9 +33,7 @@ const OperatingHours: React.FC<OperatingHoursProps> = ({
               <input
                 type="checkbox"
                 checked={hours.closed}
-                onChange={(e) =>
-                  onHoursChange(day, "closed", e.target.checked)
-                }
+                onChange={(e) => onHoursChange(day, "closed", e.target.checked)}
                 className="mr-2"
               />
               <span className="text-sm">Closed</span>
@@ -45,18 +43,14 @@ const OperatingHours: React.FC<OperatingHoursProps> = ({
                 <input
                   type="time"
                   value={hours.open}
-                  onChange={(e) =>
-                    onHoursChange(day, "open", e.target.value)
-                  }
+                  onChange={(e) => onHoursChange(day, "open", e.target.value)}
                   className="p-2 border border-gray-300 rounded text-sm"
                 />
                 <span>to</span>
                 <input
                   type="time"
                   value={hours.close}
-                  onChange={(e) =>
-                    onHoursChange(day, "close", e.target.value)
-                  }
+                  onChange={(e) => onHoursChange(day, "close", e.target.value)}
                   className="p-2 border border-gray-300 rounded text-sm"
                 />
               </>

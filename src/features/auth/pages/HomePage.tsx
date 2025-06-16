@@ -15,7 +15,7 @@ type Restaurant = {
   discount?: string;
   proOnly?: boolean;
   veg?: boolean;
-}
+};
 
 // Mock restaurant data (replace with API call in production)
 const mockRestaurants: Restaurant[] = [
