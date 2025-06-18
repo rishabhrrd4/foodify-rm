@@ -1,20 +1,61 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useGeolocation from "../../../hooks/useGeolocation";
-import StepsProgress from "./RestaurantRegistration/StepsProgress";
 import Step1BasicInfo from "./RestaurantRegistration/Step1BasicInfo";
-import Step2MenuDetails from "./RestaurantRegistration/Step2MenuDetails";
-import Step3Documents from "./RestaurantRegistration/Step3Documents";
-import Step4Payment from "./RestaurantRegistration/Step4Payment";
-import DocumentNotes from "./RestaurantRegistration/DocumentNotes";
-import ReferralSection from "./RestaurantRegistration/ReferralSection";
-import type { FormData, UploadedFiles } from "../../../types";
+import axios from "axios";
+
+// Define the type for the expected response data
+type RestaurantRegistrationResponse = {
+  name: string;
+  description: string;
+  address: string;
+  phone: string;
+  location: {
+    type: "Point";
+    coordinates: [number, number]; // [longitude, latitude]
+  };
+  tags: string[];
+};
+
+// Update FormData type to include fields that match the new response structure
+// Assuming existing fields are still relevant for the form input
+type FormData = {
+  restaurantName: string; // Corresponds to 'name' in response
+  description: string; // New field for description
+  ownerName: string;
+  email: string;
+  phone: string; // Corresponds to 'phone' in response
+  whatsappUpdates: boolean;
+  primaryContactSame: boolean;
+  primaryPhone: string;
+  shopNumber: string;
+  floor: string;
+  area: string; // Part of 'address' in response
+  city: string; // Part of 'address' in response
+  landmark: string; // Part of 'address' in response
+  cuisineTypes: string[]; // Corresponds to 'tags' in response
+  restaurantType: string;
+  operatingHours: {
+    Monday: { open: string; close: string; closed: boolean };
+    Tuesday: { open: string; close: string; closed: boolean };
+    Wednesday: { open: string; close: string; closed: boolean };
+    Thursday: { open: string; close: string; closed: boolean };
+    Friday: { open: string; close: string; closed: boolean };
+    Saturday: { open: string; close: string; closed: boolean };
+    Sunday: { open: string; close: string; closed: boolean };
+  };
+  bankAccount: string;
+  ifscCode: string;
+  accountHolder: string;
+  gstNumber: string;
+  // location will be derived from useGeolocation and sent in submit
+};
 
 const RestaurantRegistration: React.FC = () => {
   const { location, error, getLocation } = useGeolocation();
-  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     restaurantName: "",
+    description: "", // Initialize new field
     ownerName: "",
     email: "",
     phone: "",
@@ -43,177 +84,80 @@ const RestaurantRegistration: React.FC = () => {
     gstNumber: "",
   });
 
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFiles>({
-    fssaiLicense: null,
-    menuCard: null,
-    restaurantPhotos: null,
-    panCard: null,
-  });
-
-  const steps = [
-    {
-      id: 1,
-      title: "Restaurant information",
-      subtitle: "Name, location and contact number",
-      icon: "🏪",
-    },
-    {
-      id: 2,
-      title: "Menu and operational details",
-      subtitle: "Cuisine, hours, and menu",
-      icon: "📋",
-    },
-    {
-      id: 3,
-      title: "Restaurant documents",
-      subtitle: "License and verification",
-      icon: "📄",
-    },
-    {
-      id: 4,
-      title: "Partner contract",
-      subtitle: "Terms and payment details",
-      icon: "📝",
-    },
-  ];
+  const navigate = useNavigate();
 
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleFileUpload = (key: keyof UploadedFiles | string, file: File) => {
-    setUploadedFiles((prev) => ({ ...prev, [key]: file }));
-  };
+  const handleSubmitStep1 = async () => {
+    try {
+      // Construct the payload to match the expected backend structure
+      const payload = {
+        name: formData.restaurantName,
+        description: formData.description,
+        address: `${formData.shopNumber ? formData.shopNumber + ", " : ""}${
+          formData.floor ? formData.floor + ", " : ""
+        }${formData.area}, ${formData.city}${
+          formData.landmark ? ", " + formData.landmark : ""
+        }`,
+        phone: formData.phone,
+        location: location
+          ? {
+              type: "Point",
+              coordinates: [location.lon, location.lat],
+            }
+          : undefined, // Send location if available
+        tags: formData.cuisineTypes,
+        // Include any other formData fields that the backend expects but are not in the response body example
+        // e.g., ownerName, email, whatsappUpdates, etc.latitude
+        ownerName: formData.ownerName,
+        email: formData.email,
+        whatsappUpdates: formData.whatsappUpdates,
+        primaryContactSame: formData.primaryContactSame,
+        primaryPhone: formData.primaryPhone,
+        restaurantType: formData.restaurantType,
+        operatingHours: formData.operatingHours,
+        bankAccount: formData.bankAccount,
+        ifscCode: formData.ifscCode,
+        accountHolder: formData.accountHolder,
+        gstNumber: formData.gstNumber,
+      };
 
-  const navigate = useNavigate();
-  const handleReferralClick = () => {
-    navigate("/restaurant-manager/refer-form");
-  };
-
-  const handleHoursChange = (
-    day: string,
-    field: "open" | "close" | "closed",
-    value: string | boolean
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      operatingHours: {
-        ...prev.operatingHours,
-        [day]: {
-          ...prev.operatingHours[day],
-          [field]: value,
-        },
-      },
-    }));
-  };
-
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <Step1BasicInfo
-            formData={formData}
-            onInputChange={handleInputChange}
-            location={location}
-            error={error}
-            getLocation={getLocation}
-          />
-        );
-      case 2:
-        return (
-          <Step2MenuDetails
-            formData={formData}
-            onInputChange={handleInputChange}
-            onHoursChange={handleHoursChange}
-          />
-        );
-      case 3:
-        return (
-          <Step3Documents
-            uploadedFiles={uploadedFiles}
-            onFileUpload={handleFileUpload}
-          />
-        );
-      case 4:
-        return (
-          <Step4Payment formData={formData} onInputChange={handleInputChange} />
-        );
-      default:
-        return null;
+      const response = await axios.post<RestaurantRegistrationResponse>(
+        "http://localhost:3005/restaurant/create",
+        payload
+      );
+      console.log("Step 1 submitted:", response.data);
+      navigate("/thank-you");
+    } catch (err) {
+      console.error("Error submitting step 1:", err);
+      // You might want to show an error message to the user here
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <div className="text-2xl font-bold text-orange-500">Foodify</div>
-              <div className="text-sm text-gray-500">restaurant partner</div>
-            </div>
-            <div className="text-sm text-indigo-600">
-              Need help? Call +91 97-38-38-38-38
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-10">
+      <div className="bg-white shadow-md rounded-lg p-8 w-full max-w-4xl">
+        <h1 className="text-2xl font-bold mb-6 text-gray-800">
+          Step 1: Restaurant Information
+        </h1>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar */}
-          <div className="lg:w-1/3">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-semibold mb-6">
-                Complete your registration
-              </h2>
-              <StepsProgress currentStep={currentStep} steps={steps} />
-              <DocumentNotes />
-              <ReferralSection onReferralClick={handleReferralClick} />
-            </div>
-          </div>
+        <Step1BasicInfo
+          formData={formData}
+          onInputChange={handleInputChange}
+          location={location}
+          error={error}
+          getLocation={getLocation}
+        />
 
-          {/* Main Content */}
-          <div className="lg:w-2/3">
-            <div className="bg-white rounded-lg shadow-sm p-8">
-              <div className="mb-8">
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                  {steps.find((s) => s.id === currentStep)?.title}
-                </h1>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-orange-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${(currentStep / steps.length) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              {renderStepContent()}
-
-              {/* Navigation */}
-              <div className="flex justify-between mt-12 pt-6 border-t">
-                <button
-                  onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
-                  disabled={currentStep === 1}
-                  className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-orange-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Previous
-                </button>
-                <button
-                  onClick={() => {
-                    if (currentStep === steps.length) {
-                      navigate("/auth/login");
-                    } else {
-                      setCurrentStep(currentStep + 1);
-                    }
-                  }}
-                  className="px-8 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
-                >
-                  {currentStep === steps.length ? "Submit Application" : "Next"}
-                </button>
-              </div>
-            </div>
-          </div>
+        <div className="mt-10 flex justify-end">
+          <button
+            onClick={handleSubmitStep1}
+            className="px-6 py-3 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition"
+          >
+            Submit
+          </button>
         </div>
       </div>
     </div>

@@ -1,7 +1,6 @@
 import React from "react";
 import type { FormData } from "../../../../types";
 import AddressSection from "./AddressSection";
-import OwnerDetails from "./OwnerDetails";
 
 interface Step1BasicInfoProps {
   formData: FormData;
@@ -35,7 +34,7 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
         />
       </div>
 
-      <OwnerDetails formData={formData} onInputChange={onInputChange} />
+      {/* <OwnerDetails formData={formData} onInputChange={onInputChange} /> */}
 
       <AddressSection
         formData={formData}

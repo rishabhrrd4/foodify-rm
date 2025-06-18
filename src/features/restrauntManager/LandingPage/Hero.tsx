@@ -6,6 +6,9 @@ const Hero: React.FC = () => {
   const handleRegister = () => {
     navigate("/manager/register");
   };
+  const handleLogin = () => {
+    navigate("/manager/login");
+  };
 
   return (
     <section className="relative bg-gradient-to-br from-orange-50 to-red-50 pt-20 pb-16 overflow-hidden">
@@ -35,10 +38,16 @@ const Hero: React.FC = () => {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <button
+                onClick={handleLogin}
+                className="bg-orange-500 text-white px-8 py-4 rounded-lg hover:bg-orange-600 transition-all transform hover:scale-105 font-medium text-lg shadow-lg"
+              >
+                Login
+              </button>
+              <button
                 onClick={handleRegister}
                 className="bg-orange-500 text-white px-8 py-4 rounded-lg hover:bg-orange-600 transition-all transform hover:scale-105 font-medium text-lg shadow-lg"
               >
-                Register Your Restaurant
+                Signup
               </button>
               {/* <button className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-lg hover:border-orange-500 hover:text-orange-500 transition-colors font-medium text-lg">
                 Learn More

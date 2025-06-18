@@ -37,6 +37,9 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
   const handleRegister = () => {
     navigate("/manager/register");
   };
+  const handleLogin = () => {
+    navigate("/manager/login");
+  };
 
   return (
     <nav
@@ -86,10 +89,16 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled }) => {
               Contact
             </button>
             <button
+              onClick={handleLogin}
+              className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors font-medium"
+            >
+              Login
+            </button>
+            <button
               onClick={handleRegister}
               className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors font-medium"
             >
-              Register Your Restaurant
+              Signup
             </button>
           </div>
 

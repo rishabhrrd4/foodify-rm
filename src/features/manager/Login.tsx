@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { loginManager } from "../manager/auth/managerAuthService";
 
 export default function ManagerLoginPage() {
   const [formData, setFormData] = useState({
@@ -16,10 +16,10 @@ export default function ManagerLoginPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: type === "checkbox" ? checked : value,
-    });
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,24 +29,9 @@ export default function ManagerLoginPage() {
     setSuccess(false);
 
     try {
-      const response = await axios.post(
-        "http://localhost:3005/manager/login",
-        formData
-      );
-      if (response.status === 200) {
-        const { token, manager } = response.data;
-
-        // Save token to localStorage
-        localStorage.setItem("managerToken", token);
-        localStorage.setItem("managerId", manager.id); // or manager._id based on your backend
-
-        // Redirect based on restaurant registration status
-        if (!manager.restaurantRegistered) {
-          navigate("/restaurant-manager/info");
-        } else {
-          navigate("/restaurant");
-        }
-      }
+      await loginManager(formData.email, formData.password, formData.rememberMe);
+      setSuccess(true);
+      navigate("/restaurant-manager/info");
     } catch (err: any) {
       setError(err.response?.data?.message || "Login failed");
     } finally {
@@ -108,6 +93,16 @@ export default function ManagerLoginPage() {
         >
           {loading ? "Logging in..." : "Login"}
         </button>
+
+        <div className="text-center mt-4">
+          <button
+            type="button"
+            onClick={() => navigate("/manager/forgot-password")}
+            className="text-sm text-orange-600 hover:underline"
+          >
+            Forgot Password?
+          </button>
+        </div>
       </form>
     </div>
   );

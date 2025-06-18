@@ -32,6 +32,8 @@ import Notifications from "../features/restaurants/pages/Notifications";
 import ManagerLoginPage from "../features/manager/Login";
 import ManagerSignupPage from "../features/manager/Register";
 import RestaurantRegistration from "../features/restrauntManager/InfoPage/RestaurantForm";
+import ForgotPassword from "../features/manager/ForgotPassword";
+import ResetPasswordPage from "../features/manager/ResetPassword";
 
 const router = createBrowserRouter([
   {
@@ -91,7 +93,12 @@ const router = createBrowserRouter([
     path: "/restaurant-manager/login",
     element: <ManagerLoginPage />,
   },
-
+  {
+    path: "/manager/forgot-password", element: <ForgotPassword />
+  },
+  {
+    path: "/reset-password", element: <ResetPasswordPage />
+  },
   {
     path: "/restaurant",
     element: (
