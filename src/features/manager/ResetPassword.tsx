@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 
 export default function ResetPasswordPage() {
@@ -8,6 +8,7 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
+  const { token } = useParams(); // ✅ get token from URL
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,25 +23,25 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    const token = localStorage.getItem("forgotPasswordToken");
     if (!token) {
-      setError("No token found. Please request a password reset again.");
+      setError("Invalid or expired reset link.");
       return;
     }
 
     try {
-      await axios.post(
-        `http://localhost:3005/manager/reset-password`,
-        {
-          password,
-          confirm_password: confirmPassword,
-        },
-      );
+      const res = await axios.post("http://localhost:3005/manager/reset-password", {
+        password,
+        confirm_password: confirmPassword,
+        token, // ✅ send token in body
+      });
+
+      console.log(res.data);
 
       setSuccess(true);
       setError("");
-      localStorage.removeItem("forgotPasswordToken");
-      navigate("/login");
+      setTimeout(() => {
+        navigate("/manager/login");
+      }, 2000);
     } catch (err) {
       console.error(err);
       setError("Something went wrong. Please try again later.");
@@ -54,14 +55,13 @@ export default function ResetPasswordPage() {
         {success ? (
           <p className="text-green-600 text-center">
             Your password has been successfully reset.
+            <br />
+            Redirecting to login...
           </p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 New Password
               </label>
               <input
@@ -73,10 +73,7 @@ export default function ResetPasswordPage() {
               />
             </div>
             <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                 Confirm Password
               </label>
               <input

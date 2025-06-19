@@ -37,7 +37,7 @@ export default function ForgotPassword() {
       }
 
       setSubmitted(true);
-      navigate("/reset-password");
+      // navigate("/reset-password");
     } catch (err: any) {
       setError(
         err.response?.data?.message || "Something went wrong. Please try again later."

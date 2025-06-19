@@ -25,7 +25,7 @@ type FormData = {
   city: string;
   landmark: string;
   cuisineTypes: string[];
-};
+}
 
 const RestaurantRegistration: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
@@ -76,11 +76,11 @@ const RestaurantRegistration: React.FC = () => {
       console.log(payload);
       
 
-      
+      const token = localStorage.getItem("managerAccessToken")
 
       const response = await axios.post(
         "http://localhost:3005/restaurant/create",
-        payload, {headers: {Authorization: `Bearer ${localStorage.getItem('managerAccessToken')}`}}
+        payload, {headers: {Authorization: `Bearer ${token}`}}
       );
 
       console.log("submitted:", response.data);

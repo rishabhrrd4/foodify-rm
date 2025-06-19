@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Outlet, Navigate } from "react-router-dom";
 
 import AppLayout from "../layouts/AppLayout";
 import AuthLayout from "../layouts/AuthLayout";
@@ -34,6 +34,7 @@ import ManagerSignupPage from "../features/manager/Register";
 import RestaurantRegistration from "../features/restrauntManager/InfoPage/RestaurantForm";
 import ForgotPassword from "../features/manager/ForgotPassword";
 import ResetPasswordPage from "../features/manager/ResetPassword";
+import CreateRestaurantPage from "../features/manager/CreateRestaurantPage";
 
 const router = createBrowserRouter([
   {
@@ -41,7 +42,7 @@ const router = createBrowserRouter([
     element: <AppLayout />,
     errorElement: <ErrorPage />,
     children: [
-      { index: true, element: <HomePage /> },
+      { index: true, element: <Navigate to="/restaurant-manager" replace /> },
       { path: "place-order", element: <PlaceOrderPage /> },
       { path: "place-order/order-status", element: <OrderStatusPage /> },
       { path: "order-history", element: <OrderHistoryPage /> },
@@ -97,7 +98,7 @@ const router = createBrowserRouter([
     path: "/manager/forgot-password", element: <ForgotPassword />
   },
   {
-    path: "/reset-password", element: <ResetPasswordPage />
+    path: "/reset-password/:token", element: <ResetPasswordPage />
   },
   {
     path: "/restaurant",
@@ -114,6 +115,9 @@ const router = createBrowserRouter([
       { path: "restaurant-info", element: <RestaurantInfo /> },
       { path: "notifications", element: <Notifications /> },
     ],
+  },
+  {
+    path: "/create-restaurant", element: <CreateRestaurantPage />,
   },
 ]);
 
