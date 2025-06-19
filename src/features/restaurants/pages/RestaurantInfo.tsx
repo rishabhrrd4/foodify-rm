@@ -23,21 +23,21 @@ const RestaurantInfo = () => {
     setEditedInfo(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleHoursChange = (day: string, field: string, value: any) => {
-    const newHours = {
-      ...editedInfo.openingHours[day],
-      [field]: value
-    };
-    setEditedInfo(prev => ({
-      ...prev,
-      openingHours: {
-        ...prev.openingHours,
-        [day]: newHours
-      }
-    }));
-  };
+  // const handleHoursChange = (day: string, field: string, value: any) => {
+  //   const newHours = {
+  //     ...editedInfo.openingHours[day],
+  //     [field]: value
+  //   };
+  //   setEditedInfo(prev => ({
+  //     ...prev,
+  //     openingHours: {
+  //       ...prev.openingHours,
+  //       [day]: newHours
+  //     }
+  //   }));
+  // };
 
-  const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  // const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
@@ -187,7 +187,7 @@ const RestaurantInfo = () => {
         </div>
 
         {/* Statistics */}
-        <div className="border rounded-lg p-4 bg-white">
+        {/* <div className="border rounded-lg p-4 bg-white">
           <h2 className="text-lg font-semibold mb-3 sm:mb-4">Restaurant Statistics</h2>
 
           <div className="space-y-3 sm:space-y-4">
@@ -204,10 +204,10 @@ const RestaurantInfo = () => {
               <span className="text-xl font-bold text-green-600">{restaurantInfo.totalOrders}</span>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Opening Hours */}
-        <div className="border rounded-lg p-4 bg-white">
+        {/* <div className="border rounded-lg p-4 bg-white">
           <h2 className="text-lg font-semibold mb-3 sm:mb-4">Opening Hours</h2>
 
           <div className="space-y-2 sm:space-y-3">
@@ -260,7 +260,7 @@ const RestaurantInfo = () => {
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

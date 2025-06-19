@@ -1,85 +1,38 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
+import axios from "axios";
 
-// In your store/slices/menuSlice.ts
+// API URL for mock data
+const API_URL = "https://685270eb0594059b23cd89e5.mockapi.io/Menu";
+
+// Type definition for a menu item
 export type MenuItem = {
   id: string;
   name: string;
   description: string;
   price: number;
-  category: string;
-  image: string;
-  isVeg: boolean;
-  isAvailable: boolean;
-  preparationTime: number;
-  variants?: Array<{
-    // Make it optional with ?
-    id: string;
-    name: string;
-    price: number;
-  }>;
+  imageUrl: string;
+  tags: string[];
+  copons: string[]; // Note: Typo here (should be "coupons"), but keeping as is for API compatibility
 };
 
+// Interface for the menu state
 interface MenuState {
   items: MenuItem[];
   categories: string[];
   searchTerm: string;
   selectedCategory: string;
   isLoading: boolean;
+  error: string | null;
 }
 
+// Initial state for the menu
 const initialState: MenuState = {
-  items: [
-    {
-      id: "1",
-      name: "Gulab Jamun",
-      description: "Soft milk dumplings soaked in sweet rose-flavored syrup",
-      price: 99,
-      category: "Desserts",
-      image: "https://images.unsplash.com/photo-1617299649640-96f1a27a7793",
-      isVeg: true,
-      isAvailable: false,
-      preparationTime: 10,
-    },
-    {
-      id: "2",
-      name: "Paneer Tikka",
-      description:
-        "Marinated paneer cubes grilled with bell peppers and onions",
-      price: 299,
-      category: "Starters",
-      image: "https://images.unsplash.com/photo-1596797038530-2c1076a76b1b",
-      isVeg: true,
-      isAvailable: true,
-      preparationTime: 20,
-    },
-    {
-      id: "3",
-      name: "Dal Makhani",
-      description:
-        "Slow-cooked black lentils in a rich, creamy sauce with butter and spices",
-      price: 249,
-      category: "Main Course",
-      image: "https://images.unsplash.com/photo-1626500118719-4e54b973e845",
-      isVeg: true,
-      isAvailable: true,
-      preparationTime: 30,
-    },
-    {
-      id: "4",
-      name: "Butter Chicken",
-      description:
-        "Tender chicken cooked in a creamy tomato-based sauce with butter and spices",
-      price: 349,
-      category: "Main Course",
-      image: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae39",
-      isVeg: false,
-      isAvailable: true,
-      preparationTime: 25,
-    },
-  ],
+  items: [],
   categories: [
     "All",
+    "Veg",
+    "Non-veg",
     "Starters",
     "Main Course",
     "Breads",
@@ -89,48 +42,140 @@ const initialState: MenuState = {
   searchTerm: "",
   selectedCategory: "All",
   isLoading: false,
+  error: null,
 };
 
+// Async thunk to fetch menu items from API
+export const fetchMenuItems = createAsyncThunk(
+  "menu/fetchMenuItems",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(API_URL);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue("Failed to fetch menu items");
+    }
+  }
+);
+
+// Async thunk to add a new menu item
+export const addMenuItemAPI = createAsyncThunk(
+  "menu/addMenuItem",
+  async (item: Omit<MenuItem, "id">, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(API_URL, item);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue("Failed to add menu item");
+    }
+  }
+);
+
+// Async thunk to update an existing menu item
+export const updateMenuItemAPI = createAsyncThunk(
+  "menu/updateMenuItem",
+  async (item: MenuItem, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(`${API_URL}/${item.id}`, item);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue("Failed to update menu item");
+    }
+  }
+);
+
+// Async thunk to delete a menu item
+export const deleteMenuItemAPI = createAsyncThunk(
+  "menu/deleteMenuItem",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      await axios.delete(`${API_URL}/${id}`);
+      return id;
+    } catch (error) {
+      return rejectWithValue("Failed to delete menu item");
+    }
+  }
+);
+
+// Create the menu slice with reducers and extra reducers for async actions
 const menuSlice = createSlice({
   name: "menu",
   initialState,
   reducers: {
-    addMenuItem: (state, action: PayloadAction<MenuItem>) => {
-      state.items.push(action.payload);
-    },
-    updateMenuItem: (state, action: PayloadAction<MenuItem>) => {
-      const index = state.items.findIndex(
-        (item) => item.id === action.payload.id
-      );
-      if (index !== -1) {
-        state.items[index] = action.payload;
-      }
-    },
-    deleteMenuItem: (state, action: PayloadAction<string>) => {
-      state.items = state.items.filter((item) => item.id !== action.payload);
-    },
+    // Reducer to set the search term
     setSearchTerm: (state, action: PayloadAction<string>) => {
       state.searchTerm = action.payload;
     },
+    // Reducer to set the selected category
     setSelectedCategory: (state, action: PayloadAction<string>) => {
       state.selectedCategory = action.payload;
     },
-    toggleItemAvailability: (state, action: PayloadAction<string>) => {
-      const item = state.items.find((item) => item.id === action.payload);
-      if (item) {
-        item.isAvailable = !item.isAvailable;
-      }
-    },
+  },
+  extraReducers: (builder) => {
+    builder
+      // Fetch menu items cases
+      .addCase(fetchMenuItems.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchMenuItems.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.items = action.payload;
+      })
+      .addCase(fetchMenuItems.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      
+      // Add menu item cases
+      .addCase(addMenuItemAPI.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(addMenuItemAPI.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.items.push(action.payload);
+      })
+      .addCase(addMenuItemAPI.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      
+      // Update menu item cases
+      .addCase(updateMenuItemAPI.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(updateMenuItemAPI.fulfilled, (state, action) => {
+        state.isLoading = false;
+        const index = state.items.findIndex(
+          (item) => item.id === action.payload.id
+        );
+        if (index !== -1) {
+          state.items[index] = action.payload;
+        }
+      })
+      .addCase(updateMenuItemAPI.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      
+      // Delete menu item cases
+      .addCase(deleteMenuItemAPI.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(deleteMenuItemAPI.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.items = state.items.filter((item) => item.id !== action.payload);
+      })
+      .addCase(deleteMenuItemAPI.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
   },
 });
 
-export const {
-  addMenuItem,
-  updateMenuItem,
-  deleteMenuItem,
-  setSearchTerm,
-  setSelectedCategory,
-  toggleItemAvailability,
-} = menuSlice.actions;
-
+// Export actions and reducer
+export const { setSearchTerm, setSelectedCategory } = menuSlice.actions;
 export default menuSlice.reducer;

@@ -10,7 +10,7 @@ const Home = () => {
 
   const todayRevenue = activeOrders.reduce((sum, order) => sum + order.totalAmount, 0);
   const averageOrderValue = activeOrders.length > 0 ? todayRevenue / activeOrders.length : 0;
-  const availableItems = menuItems.filter(item => item.isAvailable).length;
+  // const availableItems = menuItems.filter(item => item.isAvailable).length;
 
   return (
     <div className="p-6 space-y-6">
@@ -66,7 +66,7 @@ const Home = () => {
           </div>
           <div className="mt-4">
             <p className="text-2xl font-bold text-gray-900">{restaurantInfo.rating}</p>
-            <p className="text-xs text-gray-500">{availableItems} items available</p>
+            {/* <p className="text-xs text-gray-500">{availableItems} items available</p> */}
           </div>
         </div>
       </section>
