@@ -15,12 +15,15 @@ const Layout = ({ children }: LayoutProps) => {
   useEffect(() => {
     if (restaurantInfo?.id) {
       // Connect to WebSocket when component mounts and restaurant ID is available
+      // const handleSocket = () => {
+      //   alert("Hii")
+      // };
       websocketService.connect(restaurantInfo.id);
 
       // Cleanup on unmount
-      return () => {
-        websocketService.disconnect();
-      };
+      // return () => {
+      //   websocketService.disconnect();
+      // };
     }
   }, [restaurantInfo?.id]);
 

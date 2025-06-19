@@ -29,9 +29,34 @@ export default function ManagerLoginPage() {
     setSuccess(false);
 
     try {
-      await loginManager(formData.email, formData.password, formData.rememberMe);
+      await loginManager(
+        formData.email,
+        formData.password,
+        formData.rememberMe
+      );
       setSuccess(true);
-      navigate("/restaurant-manager/info");
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+
+            localStorage.setItem("userLatitude", latitude.toString());
+            localStorage.setItem("userLongitude", longitude.toString());
+
+            navigate("/restaurant-manager/info");
+          },
+          (geoError) => {
+            console.warn("Geolocation error:", geoError.message);
+
+            navigate("/restaurant-manager/info");
+          }
+        );
+      } else {
+        console.warn("Geolocation is not supported by this browser.");
+        navigate("/restaurant-manager/info");
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || "Login failed");
     } finally {

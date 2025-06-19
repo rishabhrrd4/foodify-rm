@@ -9,24 +9,45 @@ export interface OrderItem {
   specialInstructions?: string;
 }
 
-export interface Order {
-  id: string;
-  customerName: string;
-  customerPhone: string;
-  items: OrderItem[];
-  totalAmount: number;
-  status:
-    | "pending"
-    | "accepted"
-    | "preparing"
-    | "ready"
-    | "delivered"
-    | "rejected";
-  orderTime: string;
-  estimatedDeliveryTime?: string;
-  deliveryAddress: string;
-  paymentMethod: string;
-}
+// export interface Order {
+//   id: string;
+//   customerName: string;
+//   customerPhone: string;
+//   items: OrderItem[];
+//   totalAmount: number;
+//   status:
+//     | "pending"
+//     | "accepted"
+//     | "preparing"
+//     | "ready"
+//     | "delivered"
+//     | "rejected";
+//   orderTime: string;
+//   estimatedDeliveryTime?: string;
+//   deliveryAddress: string;
+//   paymentMethod: string;
+// }
+
+export type Order = {
+  _id: string;
+  userId: string;
+  restaurantId: string;
+  items: {
+    name: string;
+    quantity: number;
+    price: number;
+  }[];
+  itemTotal: number;
+  tax: number;
+  platformFee: number;
+  deliveryCharges: number;
+  discount: number;
+  subtotal: number;
+  total: number;
+  distanceInKm: number;
+  couponCode: string | null;
+  couponId: string | null;
+};
 
 interface OrderState {
   activeOrders: Order[];

@@ -5,18 +5,11 @@ import AddressSection from "./AddressSection";
 interface Step1BasicInfoProps {
   formData: FormData;
   onInputChange: (field: keyof FormData, value: any) => void;
-  // onFileUpload: (key: string, file: File) => void;
-  getLocation: () => void;
-  location: { lat: number; lon: number } | null;
-  error: string | null;
 }
 
 const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
   formData,
   onInputChange,
-  getLocation,
-  location,
-  error,
 }) => {
   return (
     <div className="space-y-8">
@@ -34,15 +27,33 @@ const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
         />
       </div>
 
-      {/* <OwnerDetails formData={formData} onInputChange={onInputChange} /> */}
+      <div>
+        <h3 className="text-xl font-semibold mb-2">Description</h3>
+        <p className="text-gray-600 mb-4">
+          Tell us more about your restaurant (optional)
+        </p>
+        <textarea
+          placeholder="e.g. A cozy place with delicious food"
+          value={formData.description}
+          onChange={(e) => onInputChange("description", e.target.value)}
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+          rows={4}
+        />
+      </div>
 
-      <AddressSection
-        formData={formData}
-        onInputChange={onInputChange}
-        getLocation={getLocation}
-        location={location}
-        error={error}
-      />
+      <div>
+        <h3 className="text-xl font-semibold mb-2">Phone Number</h3>
+        <p className="text-gray-600 mb-4">We’ll use this to contact you</p>
+        <input
+          type="tel"
+          placeholder="Phone number*"
+          value={formData.phone}
+          onChange={(e) => onInputChange("phone", e.target.value)}
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+        />
+      </div>
+
+      <AddressSection formData={formData} onInputChange={onInputChange} />
     </div>
   );
 };
