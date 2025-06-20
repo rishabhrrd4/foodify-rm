@@ -1,36 +1,54 @@
-import { useState } from "react";
-import {
-  Plus,
-  Search,
-  Edit,
-  Trash2,
-  ToggleLeft,
-  ToggleRight,
-} from "lucide-react";
-import { useAppSelector, useAppDispatch } from "../hooks/useAppSelector";
-import {
-  setSearchTerm,
-  setSelectedCategory,
-  deleteMenuItem,
-  toggleItemAvailability,
-} from "../../../store/slices/menuSlice";
+import { useState, useEffect } from "react";
+import { Plus, Search, Edit, Trash2 } from "lucide-react";
 import MenuItemModal from "../components/menu/MenuItemModal";
-import type { MenuItem } from "../../../store/slices/menuSlice";
+import { fetchMenuItems, deleteMenuItem, type  MenuItem } from "../../../api/api"; 
 
 const Menu = () => {
-  const dispatch = useAppDispatch();
-  const { items, categories, searchTerm, selectedCategory } = useAppSelector(
-    (state) => state.menu
-  );
+  const [items, setItems] = useState<MenuItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
 
+  const categories = [
+    "All",
+    "Veg",
+    "Non-veg",
+    "Starters",
+    "Main Course",
+    "Breads",
+    "Desserts",
+    "Beverages",
+  ];
+
+  useEffect(() => {
+    const fetchMenu = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await fetchMenuItems();
+        setItems(data);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to fetch menu items");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchMenu();
+  }, []);
+
+  // Filter menu items based on search term and selected category
   const filteredItems = items.filter((item) => {
     const matchesSearch =
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchTerm.toLowerCase());
+      (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory =
-      selectedCategory === "All" || item.category === selectedCategory;
+      selectedCategory === "All" ||
+      (item.tags && item.tags.some(
+        (tag) => tag.toLowerCase() === selectedCategory.toLowerCase()
+      ));
     return matchesSearch && matchesCategory;
   });
 
@@ -44,53 +62,93 @@ const Menu = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (itemId: string) => {
+  const handleDelete = async (itemId: string) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
-      dispatch(deleteMenuItem(itemId));
+      try {
+        setIsLoading(true);
+        await deleteMenuItem(itemId);
+        setItems(items.filter(item => item.id !== itemId));
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to delete menu item");
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
-  const handleToggleAvailability = (itemId: string) => {
-    dispatch(toggleItemAvailability(itemId));
-  };
+  // Loading state when first loading data
+  if (isLoading && items.length === 0) {
+    return (
+      <div className="p-4 sm:p-6 flex justify-center items-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading menu items...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="p-4 sm:p-6">
+        <div className="bg-red-50 border-l-4 border-red-500 p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Menu Management</h1>
-          <p className="text-gray-500">Manage your restaurant's menu items</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            Menu Management
+          </h1>
+          <p className="text-sm sm:text-base text-gray-500">
+            Manage your restaurant's menu items
+          </p>
         </div>
         <button
           onClick={handleAddNew}
-          className="inline-flex items-center bg-orange-500 hover:bg-orange-600 text-white font-semibold px-4 py-2 rounded-md transition-colors cursor-pointer"
+          className="inline-flex items-center bg-orange-500 hover:bg-orange-600 text-white font-medium sm:font-semibold px-3 py-1.5 sm:px-4 sm:py-2 rounded-md transition-colors cursor-pointer text-sm sm:text-base"
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
           Add New Item
         </button>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col lg:flex-row gap-4">
+      {/* Filters Section */}
+      <div className="flex flex-col lg:flex-row gap-3 sm:gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-3.5 w-3.5 sm:h-4 sm:w-4 pointer-events-none" />
           <input
             type="text"
             placeholder="Search menu items..."
             value={searchTerm}
-            onChange={(e) => dispatch(setSearchTerm(e.target.value))}
-            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-9 sm:pl-10 pr-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm sm:text-base"
           />
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2">
           {categories.map((category) => {
             const isSelected = selectedCategory === category;
             return (
               <button
                 key={category}
-                onClick={() => dispatch(setSelectedCategory(category))}
-                className={`px-4 py-1 rounded-md font-medium transition-colors cursor-pointer
+                onClick={() => setSelectedCategory(category)}
+                className={`px-3 py-0.5 sm:px-4 sm:py-1 rounded-md font-medium transition-colors cursor-pointer text-xs sm:text-sm
                   ${
                     isSelected
                       ? "bg-orange-500 text-white hover:bg-orange-600"
@@ -104,116 +162,102 @@ const Menu = () => {
         </div>
       </div>
 
+      {/* Loading indicator when filtering */}
+      {isLoading && items.length > 0 && (
+        <div className="flex justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-orange-500"></div>
+        </div>
+      )}
+
       {/* Menu Items Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
         {filteredItems.map((item) => (
           <div
             key={item.id}
-            className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white flex flex-col"
+            className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white flex flex-col h-full"
           >
             {/* Image + Labels */}
-            <div className="relative bg-gray-200 rounded-t-lg overflow-hidden">
+            <div
+              className="relative bg-gray-100 overflow-hidden"
+              style={{ height: "180px" }}
+            >
               <img
-                src={item.image}
+                src={item.imageUrl || '/placeholder.svg'}
                 alt={item.name}
-                className="w-full h-48 object-cover"
+                className="w-full h-full object-cover"
+                loading="lazy"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = "/placeholder.svg";
                 }}
               />
-              <div className="absolute top-2 right-2 flex items-center gap-2">
-                <button
-                  onClick={() => handleToggleAvailability(item.id)}
-                  className={`p-1 rounded-full transition-colors cursor-pointer ${
-                    item.isAvailable
-                      ? "text-green-500 hover:text-green-800"
-                      : "text-gray-400 hover:text-gray-500"
-                  }`}
-                  aria-label={
-                    item.isAvailable ? "Mark unavailable" : "Mark available"
-                  }
-                >
-                  {item.isAvailable ? (
-                    <ToggleRight className="h-6 w-6" />
-                  ) : (
-                    <ToggleLeft className="h-6 w-6" />
-                  )}
-                </button>
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    item.isVeg
-                      ? "bg-green-100 text-green-800"
-                      : "bg-orange-100 text-orange-800"
-                  }`}
-                >
-                  {item.isVeg ? "Veg" : "Non-Veg"}
-                </span>
+              <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                {item.tags?.some(
+                  (tag) =>
+                    tag.toLowerCase().includes("veg") &&
+                    !item.tags?.some((tag) =>
+                      tag.toLowerCase().includes("non-veg")
+                    )
+                ) ? (
+                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Veg
+                  </span>
+                ) : item.tags?.some((tag) =>
+                    tag.toLowerCase().includes("non-veg")
+                  ) ? (
+                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    Non-Veg
+                  </span>
+                ) : null}
               </div>
             </div>
 
             {/* Item Details */}
-            <div className="p-4 flex flex-col flex-grow">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-semibold text-lg">{item.name}</h3>
-                <span className="text-lg font-bold text-green-500">
+            <div className="p-3 sm:p-4 flex flex-col flex-grow">
+              <div className="flex justify-between items-start mb-1.5 sm:mb-2">
+                
+                <h3 className="font-semibold text-base sm:text-lg line-clamp-1">
+                  {item.name}
+                </h3>
+                <span className="text-base sm:text-lg font-bold text-green-500 whitespace-nowrap ml-2">
                   ₹{item.price}
                 </span>
               </div>
-              <p className="text-gray-500 text-sm mb-3 line-clamp-2">
+              <p className="text-gray-500 text-xs sm:text-sm mb-2 sm:mb-3 line-clamp-2">
                 {item.description}
               </p>
 
-              {/* Variants Display */}
-              {item.variants && item.variants.length > 0 && (
-                <div className="mb-3">
-                  <h4 className="text-xs font-medium text-gray-500 mb-1">
-                    Variants:
-                  </h4>
-                  <div className="flex flex-col lg:flex-row lg:flex-wrap gap-4">
-                    {item.variants.map((variant) => (
-                      <div
-                        key={variant.id}
-                        className="flex justify-between lg:justify-start items-center text-xs bg-gray-100 rounded-md p-2 w-full lg:w-auto"
+              {/* Tags Display */}
+              {item.tags && item.tags.length > 0 && (
+                <div className="mb-2 sm:mb-3">
+                  <div className="flex flex-wrap gap-1.5">
+                    {item.tags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="px-2 py-0.5 rounded-full text-[0.65rem] sm:text-xs bg-gray-100 text-gray-600"
                       >
-                        <span className="text-gray-600 font-medium">
-                          {variant.name}
-                        </span>
-                        <span className="text-gray-600 lg:ml-4">
-                          ₹{variant.price}
-                        </span>
-                      </div>
+                        {tag}
+                      </span>
                     ))}
                   </div>
                 </div>
               )}
 
-              <div className="flex justify-between items-center mb-3 text-xs text-gray-500">
-                <span>Prep time: {item.preparationTime} min</span>
-                <span
-                  className={`px-2 py-1 rounded-full ${
-                    item.isAvailable
-                      ? "bg-green-100 text-green-800"
-                      : "bg-gray-100 text-gray-500"
-                  }`}
-                >
-                  {item.isAvailable ? "Available" : "Unavailable"}
-                </span>
-              </div>
-
-              <div className="flex space-x-2 mt-auto">
+              
+              {/* Action Buttons */}
+              <div className="flex space-x-2 mt-auto pt-2">
                 <button
                   onClick={() => handleEdit(item)}
-                  className="flex-1 flex items-center justify-center px-3 py-1 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+                  className="flex-1 flex items-center justify-center px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer text-xs sm:text-sm"
                 >
-                  <Edit className="h-4 w-4 mr-1" />
+                  <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                   Edit
                 </button>
                 <button
                   onClick={() => handleDelete(item.id)}
-                  className="flex-1 flex items-center justify-center px-3 py-1 border border-orange-300 rounded-md text-orange-600 hover:bg-orange-50 transition-colors cursor-pointer"
+                  className="flex-1 flex items-center justify-center px-2 sm:px-3 py-1 border border-orange-300 rounded-md text-orange-600 hover:bg-orange-50 transition-colors cursor-pointer text-xs sm:text-sm"
                 >
-                  <Trash2 className="h-4 w-4 mr-1" />
+                  <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                   Delete
                 </button>
               </div>
@@ -222,18 +266,30 @@ const Menu = () => {
         ))}
       </div>
 
-      {filteredItems.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-500">
+      {/* Empty state */}
+      {filteredItems.length === 0 && !isLoading && (
+        <div className="text-center py-8 sm:py-12">
+          <p className="text-gray-500 text-sm sm:text-base">
             No menu items found matching your criteria.
           </p>
         </div>
       )}
 
+      {/* Modal for adding/editing items */}
       <MenuItemModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         editingItem={editingItem}
+        onItemAdded={(newItem) => {
+          if (editingItem) {
+            // Update existing item
+            setItems(items.map(item => item.id === newItem.id ? newItem : item));
+          } else {
+            // Add new item
+            setItems([...items, newItem]);
+          }
+          setIsModalOpen(false);
+        }}
       />
     </div>
   );
