@@ -11,7 +11,7 @@ import ReferralForm from "../features/restrauntManager/InfoPage/ReferralForm";
 
 import Login from "../features/auth/pages/Login";
 import Register from "../features/auth/pages/Register";
-import HomePage from "../features/auth/pages/HomePage";
+// import HomePage from "../features/auth/pages/HomePage";
 import ErrorPage from "../features/auth/components/ErrorPage";
 
 import PlaceOrderPage from "../features/customer/orderPlacement/PlaceOrderPage";

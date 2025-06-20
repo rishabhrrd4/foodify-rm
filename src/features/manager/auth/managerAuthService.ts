@@ -1,7 +1,5 @@
-// src/services/managerAuthService.ts
 import axios from "../../../api/axios";
 
-// === TOKEN HELPERS ===
 export const getManagerAccessToken = () => localStorage.getItem("managerAccessToken");
 export const getManagerRefreshToken = () => localStorage.getItem("managerRefreshToken");
 
@@ -16,7 +14,6 @@ export const clearManagerAuthTokens = () => {
   delete axios.defaults.headers.common["Authorization"];
 };
 
-// === LOGIN ===
 export const loginManager = async (email: string, password: string, rememberMe: boolean) => {
   const response = await axios.post("/manager/login", {
     email,
@@ -25,21 +22,21 @@ export const loginManager = async (email: string, password: string, rememberMe: 
 });
 
   const { accessToken, refreshToken, data } = response.data;
-  console.log(response.data);
   
   console.log(data);
+  console.log(response.data.restaunrantId);
   
 
   localStorage.setItem("managerAccessToken", accessToken);
   localStorage.setItem("managerRefreshToken", refreshToken);
-  localStorage.setItem("managerId", data._id);
+  // localStorage.setItem("managerId", data._id);
+  localStorage.setItem("restaurantId", data.restaurantId)
 
   setManagerAuthHeaders(accessToken);
 
   return { accessToken, refreshToken, manager: data };
 };
 
-// === SIGNUP ===
 export const signupManager = async (name: string, email: string, password: string, accountNumber: string, ifscCode: string, bankName: string) => {
   const response = await axios.post("/manager/signup", {
     name,
@@ -53,7 +50,6 @@ export const signupManager = async (name: string, email: string, password: strin
   return response.data;
 };
 
-// === LOGOUT ===
 export const logoutManager = async () => {
   const token = getManagerAccessToken();
 
@@ -72,7 +68,6 @@ export const logoutManager = async () => {
   }
 };
 
-// === REFRESH TOKEN ===
 export const refreshManagerToken = async () => {
   const refreshToken = getManagerRefreshToken();
 
