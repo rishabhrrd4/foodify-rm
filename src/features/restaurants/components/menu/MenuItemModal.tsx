@@ -1,29 +1,24 @@
 import { useState, useEffect } from 'react';
 import { FaTimes, FaPlus, FaTrash } from 'react-icons/fa';
-import { useAppDispatch } from '../../hooks/useAppSelector';
-import { addMenuItemAPI, updateMenuItemAPI } from '../../../../store/slices/menuSlice';
-import type { MenuItem } from '../../../../store/slices/menuSlice';
+import { addMenuItem, updateMenuItem, type MenuItem } from '../../pages/api';
 
 interface MenuItemModalProps {
   isOpen: boolean;
   onClose: () => void;
   editingItem?: MenuItem | null;
+  onItemAdded: (item: MenuItem) => void;
 }
 
-const MenuItemModal = ({ isOpen, onClose, editingItem }: MenuItemModalProps) => {
-  const dispatch = useAppDispatch();
-
+const MenuItemModal = ({ isOpen, onClose, editingItem, onItemAdded }: MenuItemModalProps) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: 0,
     imageUrl: '/placeholder.svg',
     tags: [] as string[],
-    copons: [] as string[],
   });
 
   const [newTag, setNewTag] = useState('');
-  const [newCopon, setNewCopon] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,7 +30,6 @@ const MenuItemModal = ({ isOpen, onClose, editingItem }: MenuItemModalProps) => 
         price: editingItem.price || 0,
         imageUrl: editingItem.imageUrl || '/placeholder.svg',
         tags: editingItem.tags || [],
-        copons: editingItem.copons || [],
       });
     } else {
       setFormData({
@@ -44,10 +38,10 @@ const MenuItemModal = ({ isOpen, onClose, editingItem }: MenuItemModalProps) => 
         price: 0,
         imageUrl: '/placeholder.svg',
         tags: [],
-        copons: [],
       });
     }
     setError(null);
+    setNewTag('');
   }, [editingItem, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,58 +50,44 @@ const MenuItemModal = ({ isOpen, onClose, editingItem }: MenuItemModalProps) => 
     setError(null);
 
     try {
+      let result;
       if (editingItem) {
-        await dispatch(updateMenuItemAPI({
-          id: editingItem.id,
-          ...formData,
-        })).unwrap();
+        result = await updateMenuItem(editingItem.id, formData); 
       } else {
-        await dispatch(addMenuItemAPI(formData)).unwrap();
+        result = await addMenuItem(formData);
       }
+      onItemAdded(result);
       onClose();
-    } catch (err) {
-      setError('Failed to save menu item. Please try again.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ 
+      ...prev, 
+      [name]: name === 'price' ? Number(value) : value 
+    }));
   };
 
   const addTag = () => {
-    if (newTag.trim()) {
-      setFormData({
-        ...formData,
-        tags: [...formData.tags, newTag.trim()],
-      });
+    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        tags: [...prev.tags, newTag.trim()]
+      }));
       setNewTag('');
     }
   };
 
   const removeTag = (index: number) => {
-    setFormData({
-      ...formData,
-      tags: formData.tags.filter((_, i) => i !== index),
-    });
-  };
-
-  const addCopon = () => {
-    if (newCopon.trim()) {
-      setFormData({
-        ...formData,
-        copons: [...formData.copons, newCopon.trim()],
-      });
-      setNewCopon('');
-    }
-  };
-
-  const removeCopon = (index: number) => {
-    setFormData({
-      ...formData,
-      copons: formData.copons.filter((_, i) => i !== index),
-    });
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.filter((_, i) => i !== index)
+    }));
   };
 
   if (!isOpen) return null;
@@ -115,7 +95,6 @@ const MenuItemModal = ({ isOpen, onClose, editingItem }: MenuItemModalProps) => 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white w-full max-w-md rounded-lg shadow-lg relative max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="sticky top-0 bg-white p-6 pb-4 border-b flex justify-between items-center">
           <h2 className="text-xl font-bold">
             {editingItem ? 'Edit Menu Item' : 'Add New Menu Item'}
@@ -124,6 +103,7 @@ const MenuItemModal = ({ isOpen, onClose, editingItem }: MenuItemModalProps) => 
             onClick={onClose} 
             className="text-gray-500 hover:text-orange-500 transition-colors"
             disabled={isSubmitting}
+            aria-label="Close modal"
           >
             <FaTimes size={20} />
           </button>
@@ -145,76 +125,79 @@ const MenuItemModal = ({ isOpen, onClose, editingItem }: MenuItemModalProps) => 
             </div>
           )}
 
-          {/* Item Name */}
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              Item Name
+              Item Name *
             </label>
             <input
               id="name"
+              name="name"
+              type="text"
               value={formData.name}
-              onChange={e => handleInputChange('name', e.target.value)}
+              onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
               required
               disabled={isSubmitting}
             />
           </div>
 
-          {/* Description */}
           <div>
             <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
               Description
             </label>
             <textarea
               id="description"
+              name="description"
               rows={3}
               value={formData.description}
-              onChange={e => handleInputChange('description', e.target.value)}
+              onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
               disabled={isSubmitting}
             />
           </div>
 
-          {/* Price */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Price (₹)
+            <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
+              Price (₹) *
             </label>
             <input
+              id="price"
+              name="price"
               type="number"
               min="0"
+              step="0.01"
               value={formData.price}
-              onChange={e => handleInputChange('price', Number(e.target.value))}
+              onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
               required
               disabled={isSubmitting}
             />
           </div>
 
-          {/* Image URL */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-1">
               Image URL
             </label>
             <input
+              id="imageUrl"
+              name="imageUrl"
               type="text"
               value={formData.imageUrl}
-              onChange={e => handleInputChange('imageUrl', e.target.value)}
+              onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
               placeholder="/placeholder.svg"
               disabled={isSubmitting}
             />
           </div>
 
-          {/* Tags Section */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="newTag" className="block text-sm font-medium text-gray-700 mb-2">
               Tags
             </label>
             <div className="space-y-2">
               {formData.tags.map((tag, index) => (
                 <div
-                  key={index}
+                  key={`${tag}-${index}`}
                   className="flex items-center justify-between bg-gray-50 p-2 rounded"
                 >
                   <span className="text-sm">{tag}</span>
@@ -223,6 +206,7 @@ const MenuItemModal = ({ isOpen, onClose, editingItem }: MenuItemModalProps) => 
                     onClick={() => removeTag(index)}
                     className="text-orange-600 hover:text-orange-800 transition-colors"
                     disabled={isSubmitting}
+                    aria-label={`Remove tag ${tag}`}
                   >
                     <FaTrash size={14} />
                   </button>
@@ -230,10 +214,12 @@ const MenuItemModal = ({ isOpen, onClose, editingItem }: MenuItemModalProps) => 
               ))}
               <div className="flex gap-2">
                 <input
+                  id="newTag"
                   type="text"
                   placeholder="Add tag"
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
                   disabled={isSubmitting}
                 />
@@ -241,7 +227,8 @@ const MenuItemModal = ({ isOpen, onClose, editingItem }: MenuItemModalProps) => 
                   type="button"
                   onClick={addTag}
                   className="px-3 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors flex items-center justify-center"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !newTag.trim()}
+                  aria-label="Add tag"
                 >
                   <FaPlus size={14} />
                 </button>
@@ -249,50 +236,6 @@ const MenuItemModal = ({ isOpen, onClose, editingItem }: MenuItemModalProps) => 
             </div>
           </div>
 
-          {/* Coupons Section */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Coupons
-            </label>
-            <div className="space-y-2">
-              {formData.copons.map((copon, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between bg-gray-50 p-2 rounded"
-                >
-                  <span className="text-sm">{copon}</span>
-                  <button
-                    type="button"
-                    onClick={() => removeCopon(index)}
-                    className="text-orange-600 hover:text-orange-800 transition-colors"
-                    disabled={isSubmitting}
-                  >
-                    <FaTrash size={14} />
-                  </button>
-                </div>
-              ))}
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Add coupon code"
-                  value={newCopon}
-                  onChange={(e) => setNewCopon(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
-                  disabled={isSubmitting}
-                />
-                <button
-                  type="button"
-                  onClick={addCopon}
-                  className="px-3 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors flex items-center justify-center"
-                  disabled={isSubmitting}
-                >
-                  <FaPlus size={14} />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Buttons */}
           <div className="flex space-x-3 pt-6">
             <button
               type="button"

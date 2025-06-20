@@ -27,7 +27,7 @@ export const loginManager = async (email: string, password: string, rememberMe: 
   const { accessToken, refreshToken, data } = response.data;
 
   localStorage.setItem("managerAccessToken", accessToken);
-  localStorage.setItem("managerRefreshToken", refreshToken);
+  localStorage.setItem("managerRefreshToken", refreshToken);  
   localStorage.setItem("managerId", data._id);
 
   setManagerAuthHeaders(accessToken);
