@@ -25,6 +25,7 @@ import Home from "../features/restaurants/pages/Home";
 import Menu from "../features/restaurants/pages/Menu";
 import Orders from "../features/restaurants/pages/Orders";
 import OrderHistory from "../features/restaurants/pages/OrderHistory";
+import FeedbackHistory from "../features/restaurants/pages/FeedbackHistory"
 import RestaurantInfo from "../features/restaurants/pages/RestaurantInfo";
 import Notifications from "../features/restaurants/pages/Notifications";
 
@@ -112,6 +113,7 @@ const router = createBrowserRouter([
       { path: "menu", element: <Menu /> },
       { path: "orders", element: <Orders /> },
       { path: "order-history", element: <OrderHistory /> },
+      { path: "feedback-history", element: <FeedbackHistory /> },
       { path: "restaurant-info", element: <RestaurantInfo /> },
       { path: "notifications", element: <Notifications /> },
     ],
