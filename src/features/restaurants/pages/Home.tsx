@@ -8,7 +8,8 @@ const Home = () => {
   const orderHistory = useAppSelector(state => state.orders.orderHistory);
   const menuItems = useAppSelector(state => state.menu.items);
 
-  const todayRevenue = activeOrders.reduce((sum, order) => sum + order.totalAmount, 0);
+  // Ensure these properties exist on the order objectseyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODRkNTFhYmFiODVlNGVlYTAyOTQ0MTAiLCJlbWFpbCI6InJpc2hhYmhAeW9wbWFpbC5jb20iLCJwaG9uZSI6IjkwODc2NTQzMjEiLCJyb2xlIjoxLCJuYW1lIjoiUmlzaGFiaCBTIiwiaWF0IjoxNzUwNTYwODQ0LCJleHAiOjE3NTA1NjE3NDR9.a6MC9XOanZkhry87QXEzQdI2ZomyJG5lcA1XRWzIA-w
+  const todayRevenue = activeOrders.reduce((sum, order) => sum + (order.totalAmount ?? order.total ?? 0), 0); // Use `total` or `totalAmount` based on your Order type
   const averageOrderValue = activeOrders.length > 0 ? todayRevenue / activeOrders.length : 0;
   const availableItems = menuItems.filter(item => item.isAvailable).length;
 
@@ -41,7 +42,8 @@ const Home = () => {
             <BiRupee className="h-5 w-5 text-gray-400" />
           </div>
           <div className="mt-4">
-            <p className="text-2xl font-bold text-gray-900">₹{todayRevenue}</p>
+            {/* Make sure totalAmount exists or use the new 'total' field from the Order type */}
+            <p className="text-2xl font-bold text-gray-900">₹{todayRevenue.toFixed(2)}</p>
             <p className="text-xs text-gray-500">+12% from yesterday</p>
           </div>
         </div>
@@ -79,17 +81,19 @@ const Home = () => {
             <h3 className="text-lg font-semibold text-gray-900">Recent Orders</h3>
           </header>
           <div className="mt-4 space-y-4">
+            {/* FIX: Use order._id as key based on your Order type and previous fixes */}
             {activeOrders.slice(0, 3).map(order => (
               <div
-                key={order.id}
+                key={order._id || order.id} // Use _id first, fallback to id if _id is not present
                 className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
               >
                 <div>
-                  <p className="font-medium text-gray-900">{order.customerName}</p>
-                  <p className="text-sm text-gray-600">#{order.id}</p>
+                  <p className="font-medium text-gray-900">{order.customerName || order.userId}</p> {/* Use customerName or userId */}
+                  <p className="text-sm text-gray-600">#{order._id || order.id}</p> {/* Use _id or id */}
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold text-gray-900">₹{order.totalAmount}</p>
+                  {/* Ensure order.total exists or fallback to totalAmount */}
+                  <p className="font-semibold text-gray-900">₹{(order.total ?? order.totalAmount ?? 0).toFixed(2)}</p>
                   <span
                     className={`text-xs px-2 py-1 rounded-full ${
                       order.status === 'pending'

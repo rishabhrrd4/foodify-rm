@@ -6,7 +6,7 @@ import {
   updateOrderStatus,
 } from "../../../../store/slices/orderSlice";
 import { FaTimes, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
-import { Socket } from "socket.io-client";
+// import { Socket } from "socket.io-client";
 import { websocketService } from "../../../../services/websocket";
 
 const OrderNotification = () => {
@@ -18,10 +18,13 @@ const OrderNotification = () => {
 
   const handleDismiss = useCallback(
     (orderId: string) => {
+      // Immediately remove from visible state for instant UI removal
       setVisibleNotifications((prev) => prev.filter((id) => id !== orderId));
+      // Then, after a short delay, clear it from Redux state
+      // This delay can be used if you have exit animations before full removal
       setTimeout(() => {
         dispatch(clearNotification(orderId));
-      }, 300);
+      }, 300); // Keep this delay if you want a short animation before it's truly gone from state
     },
     [dispatch]
   );
@@ -29,8 +32,11 @@ const OrderNotification = () => {
   useEffect(() => {
     if (notifications.length > 0) {
       const newNotification = notifications[notifications.length - 1];
+      // Only add to visibleNotifications if it's a new, unique notification
       if (!visibleNotifications.includes(newNotification._id)) {
         setVisibleNotifications((prev) => [...prev, newNotification._id]);
+        // Set a timeout for auto-dismissal after 10 seconds
+        // This will call handleDismiss, which immediately removes it from UI
         setTimeout(() => handleDismiss(newNotification._id), 10000);
       }
     }
@@ -38,12 +44,15 @@ const OrderNotification = () => {
 
   const handleAccept = (orderId: string) => {
     dispatch(updateOrderStatus({ id: orderId, status: "accepted" }));
-    websocketService.handleOrderResponse(orderId);
+    websocketService.handleOrderAccept(orderId);
+    // Call handleDismiss, which now instantly removes the card from the UI
     handleDismiss(orderId);
   };
 
   const handleReject = (orderId: string) => {
     dispatch(updateOrderStatus({ id: orderId, status: "rejected" }));
+    websocketService.handleOrderReject(orderId);
+    // Call handleDismiss, which now instantly removes the card from the UI
     handleDismiss(orderId);
   };
 
