@@ -5,7 +5,7 @@ import type { RootState } from '../store/store';
 import { getManagerAccessToken } from '../features/manager/auth/managerAuthService';
 
 // login status ke base pe redirect karna hai
-const ProtectedRoute = ({ allowedRoles }: { allowedRoles?: string[] }) => {
+const ProtectedRoute = () => {
   const isLoggedInRedux = useSelector((state: RootState) => state.auth.isLoggedIn); // check login status
 
   const [isAuthenticating, setIsAuthenticating] = useState(true); 
