@@ -26,7 +26,6 @@ import Menu from "../features/restaurants/pages/Menu";
 import Orders from "../features/restaurants/pages/Orders";
 import OrderHistory from "../features/restaurants/pages/OrderHistory";
 import RestaurantInfo from "../features/restaurants/pages/RestaurantInfo";
-import Notifications from "../features/restaurants/pages/Notifications";
 
 // Manager login/signup pages
 import ManagerLoginPage from "../features/manager/Login";
@@ -112,7 +111,6 @@ const router = createBrowserRouter([
       { path: "orders", element: <Orders /> },
       { path: "order-history", element: <OrderHistory /> },
       { path: "restaurant-info", element: <RestaurantInfo /> },
-      { path: "notifications", element: <Notifications /> },
     ],
   },
 ]);

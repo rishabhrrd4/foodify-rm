@@ -1,68 +1,83 @@
 import { useState, useEffect } from "react";
 import { Plus, Search, Edit, Trash2 } from "lucide-react";
-import { useAppSelector, useAppDispatch } from "../hooks/useAppSelector";
-import {
-  setSearchTerm,
-  setSelectedCategory,
-  fetchMenuItems,
-  deleteMenuItemAPI,
-} from "../../../store/slices/menuSlice";
 import MenuItemModal from "../components/menu/MenuItemModal";
-import type { MenuItem } from "../../../store/slices/menuSlice";
+import { fetchMenuItems, deleteMenuItem, type  MenuItem } from "./api"; 
 
 const Menu = () => {
-  const dispatch = useAppDispatch();
-  const { 
-    items, 
-    categories, 
-    searchTerm, 
-    selectedCategory,
-    isLoading,
-    error 
-  } = useAppSelector((state) => state.menu);
-  
+  const [items, setItems] = useState<MenuItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
 
-  // Fetch menu items on component mount
+  const categories = [
+    "All",
+    "Veg",
+    "Non-veg",
+    "Starters",
+    "Main Course",
+    "Breads",
+    "Desserts",
+    "Beverages",
+  ];
+
   useEffect(() => {
-    dispatch(fetchMenuItems());
-  }, [dispatch]);
+    const fetchMenu = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await fetchMenuItems();
+        setItems(data);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to fetch menu items");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchMenu();
+  }, []);
 
   // Filter menu items based on search term and selected category
-  const filteredItems = items?.filter((item) => {
+  const filteredItems = items.filter((item) => {
     const matchesSearch =
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchTerm.toLowerCase());
+      (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory =
       selectedCategory === "All" ||
-      item.tags?.some(
+      (item.tags && item.tags.some(
         (tag) => tag.toLowerCase() === selectedCategory.toLowerCase()
-      );
+      ));
     return matchesSearch && matchesCategory;
-  }) || [];
+  });
 
-  // Handler for adding a new item
   const handleAddNew = () => {
     setEditingItem(null);
     setIsModalOpen(true);
   };
 
-  // Handler for editing an item
   const handleEdit = (item: MenuItem) => {
     setEditingItem(item);
     setIsModalOpen(true);
   };
 
-  // Handler for deleting an item
-  const handleDelete = (itemId: string) => {
+  const handleDelete = async (itemId: string) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
-      dispatch(deleteMenuItemAPI(itemId));
+      try {
+        setIsLoading(true);
+        await deleteMenuItem(itemId);
+        setItems(items.filter(item => item.id !== itemId));
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to delete menu item");
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
   // Loading state when first loading data
-  if (isLoading && (!items || items.length === 0)) {
+  if (isLoading && items.length === 0) {
     return (
       <div className="p-4 sm:p-6 flex justify-center items-center h-64">
         <div className="text-center">
@@ -122,7 +137,7 @@ const Menu = () => {
             type="text"
             placeholder="Search menu items..."
             value={searchTerm}
-            onChange={(e) => dispatch(setSearchTerm(e.target.value))}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-9 sm:pl-10 pr-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm sm:text-base"
           />
         </div>
@@ -132,7 +147,7 @@ const Menu = () => {
             return (
               <button
                 key={category}
-                onClick={() => dispatch(setSelectedCategory(category))}
+                onClick={() => setSelectedCategory(category)}
                 className={`px-3 py-0.5 sm:px-4 sm:py-1 rounded-md font-medium transition-colors cursor-pointer text-xs sm:text-sm
                   ${
                     isSelected
@@ -148,7 +163,7 @@ const Menu = () => {
       </div>
 
       {/* Loading indicator when filtering */}
-      {isLoading && items && items.length > 0 && (
+      {isLoading && items.length > 0 && (
         <div className="flex justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-orange-500"></div>
         </div>
@@ -167,7 +182,7 @@ const Menu = () => {
               style={{ height: "180px" }}
             >
               <img
-                src={item.imageUrl}
+                src={item.imageUrl || '/placeholder.svg'}
                 alt={item.name}
                 className="w-full h-full object-cover"
                 loading="lazy"
@@ -200,6 +215,7 @@ const Menu = () => {
             {/* Item Details */}
             <div className="p-3 sm:p-4 flex flex-col flex-grow">
               <div className="flex justify-between items-start mb-1.5 sm:mb-2">
+                
                 <h3 className="font-semibold text-base sm:text-lg line-clamp-1">
                   {item.name}
                 </h3>
@@ -227,25 +243,7 @@ const Menu = () => {
                 </div>
               )}
 
-              {/* Coupons Display */}
-              {item.copons && item.copons.length > 0 && (
-                <div className="mb-2 sm:mb-3">
-                  <h4 className="text-[0.65rem] sm:text-xs font-medium text-gray-500 mb-1">
-                    Coupons:
-                  </h4>
-                  <div className="flex flex-wrap gap-1.5">
-                    {item.copons.map((copon, index) => (
-                      <span
-                        key={index}
-                        className="px-2 py-0.5 rounded-md text-[0.65rem] sm:text-xs bg-orange-100 text-orange-800"
-                      >
-                        {copon}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
+              
               {/* Action Buttons */}
               <div className="flex space-x-2 mt-auto pt-2">
                 <button
@@ -282,6 +280,16 @@ const Menu = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         editingItem={editingItem}
+        onItemAdded={(newItem) => {
+          if (editingItem) {
+            // Update existing item
+            setItems(items.map(item => item.id === newItem.id ? newItem : item));
+          } else {
+            // Add new item
+            setItems([...items, newItem]);
+          }
+          setIsModalOpen(false);
+        }}
       />
     </div>
   );

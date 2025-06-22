@@ -1,26 +1,58 @@
 import { TrendingUp, Clock, Star } from 'lucide-react';
-import { useAppSelector } from '../hooks/useAppSelector';
 import { BiRupee } from 'react-icons/bi';
 
+type RestaurantInfo = {
+  name: string;
+  description: string;
+  cuisine: string[];
+  totalOrders: number;
+  rating: number;
+};
+
+type Order = {
+  id: string;
+  customerName: string;
+  totalAmount: number;
+  status: 'pending' | 'preparing' | 'completed';
+};
+
+// Static data for demonstration
+const staticRestaurantInfo: RestaurantInfo = {
+  name: "King Kitchen",
+  description: "A delightful culinary experience with a variety of dishes.",
+  cuisine: ["Italian", "Indian", "Chinese"],
+  totalOrders: 1250,
+  rating: 4.5,
+};
+
+const staticActiveOrders: Order[] = [
+  { id: "ORD001", customerName: "Sumit", totalAmount: 2500, status: "preparing" },
+  { id: "ORD002", customerName: "Bobu Rao", totalAmount: 1200, status: "pending" },
+  { id: "ORD003", customerName: "Charlie", totalAmount: 3000, status: "preparing" },
+  { id: "ORD004", customerName: "Prince", totalAmount: 1800, status: "pending" },
+];
+
+const staticOrderHistory: Order[] = [
+  { id: "ORD005", customerName: "Virat", totalAmount: 1500, status: "completed" },
+  { id: "ORD006", customerName: "Nayan ", totalAmount: 2200, status: "completed" },
+  { id: "ORD007", customerName: "Suresh ", totalAmount: 900, status: "completed" },
+];
+
 const Home = () => {
-  const restaurantInfo = useAppSelector(state => state.restaurant.info);
-  const activeOrders = useAppSelector(state => state.orders.activeOrders);
-  const orderHistory = useAppSelector(state => state.orders.orderHistory);
-  const menuItems = useAppSelector(state => state.menu.items);
+  const restaurantInfo = staticRestaurantInfo;
+  const activeOrders = staticActiveOrders;
+  const orderHistory = staticOrderHistory;
 
   const todayRevenue = activeOrders.reduce((sum, order) => sum + order.totalAmount, 0);
   const averageOrderValue = activeOrders.length > 0 ? todayRevenue / activeOrders.length : 0;
-  // const availableItems = menuItems.filter(item => item.isAvailable).length;
 
   return (
     <div className="p-6 space-y-6">
-      {/* Welcome Section */}
       <section className="bg-gradient-to-r from-red-500 to-orange-500 rounded-lg p-6 text-white">
         <h1 className="text-3xl font-bold mb-2">Welcome back!</h1>
         <p className="text-red-100">Here's what's happening at {restaurantInfo.name} today</p>
       </section>
 
-      {/* Stats Grid */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Active Orders */}
         <div className="bg-white rounded-lg shadow p-4">

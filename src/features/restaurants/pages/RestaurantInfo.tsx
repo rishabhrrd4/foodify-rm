@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Edit, Save, X, MapPin, Phone, Mail, Clock, Star } from 'lucide-react';
+import { Edit, Save, X, MapPin, Phone, Mail } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../hooks/useAppSelector';
 import { updateRestaurantInfo } from '../../../store/slices/restaurantSlice';
 
@@ -22,22 +22,6 @@ const RestaurantInfo = () => {
   const handleInputChange = (field: string, value: any) => {
     setEditedInfo(prev => ({ ...prev, [field]: value }));
   };
-
-  // const handleHoursChange = (day: string, field: string, value: any) => {
-  //   const newHours = {
-  //     ...editedInfo.openingHours[day],
-  //     [field]: value
-  //   };
-  //   setEditedInfo(prev => ({
-  //     ...prev,
-  //     openingHours: {
-  //       ...prev.openingHours,
-  //       [day]: newHours
-  //     }
-  //   }));
-  // };
-
-  // const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
@@ -186,81 +170,7 @@ const RestaurantInfo = () => {
           </div>
         </div>
 
-        {/* Statistics */}
-        {/* <div className="border rounded-lg p-4 bg-white">
-          <h2 className="text-lg font-semibold mb-3 sm:mb-4">Restaurant Statistics</h2>
 
-          <div className="space-y-3 sm:space-y-4">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center text-gray-600">
-                <Star className="h-5 w-5 text-yellow-500 mr-2 flex-shrink-0" />
-                <span>Rating</span>
-              </div>
-              <span className="text-xl font-bold text-yellow-600">{restaurantInfo.rating}/5</span>
-            </div>
-
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Total Orders</span>
-              <span className="text-xl font-bold text-green-600">{restaurantInfo.totalOrders}</span>
-            </div>
-          </div>
-        </div> */}
-
-        {/* Opening Hours */}
-        {/* <div className="border rounded-lg p-4 bg-white">
-          <h2 className="text-lg font-semibold mb-3 sm:mb-4">Opening Hours</h2>
-
-          <div className="space-y-2 sm:space-y-3">
-            {days.map((day) => (
-              <div key={day} className="flex flex-col xs:flex-row xs:justify-between xs:items-center gap-1 xs:gap-2">
-                <div className="flex items-center gap-2 xs:w-40">
-                  {isEditing && (
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 flex-shrink-0"
-                      checked={editedInfo.openingHours[day].isOpen}
-                      onChange={(e) => handleHoursChange(day, 'isOpen', e.target.checked)}
-                    />
-                  )}
-                  <span className="capitalize font-medium text-sm sm:text-base">{day}</span>
-                </div>
-
-                {isEditing ? (
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                    <div className="flex items-center gap-1 sm:gap-2">
-                      <input
-                        type="time"
-                        value={editedInfo.openingHours[day].open}
-                        onChange={(e) => handleHoursChange(day, 'open', e.target.value)}
-                        disabled={!editedInfo.openingHours[day].isOpen}
-                        className="border rounded px-2 py-1 w-full sm:w-28 text-xs sm:text-sm"
-                      />
-                      <span className="text-xs sm:text-sm text-gray-500 hidden sm:inline">to</span>
-                    </div>
-                    <input
-                      type="time"
-                      value={editedInfo.openingHours[day].close}
-                      onChange={(e) => handleHoursChange(day, 'close', e.target.value)}
-                      disabled={!editedInfo.openingHours[day].isOpen}
-                      className="border rounded px-2 py-1 w-full sm:w-28 text-xs sm:text-sm"
-                    />
-                  </div>
-                ) : (
-                  <div className="flex items-center">
-                    <Clock className="h-4 w-4 mr-1 sm:mr-2 text-gray-400 flex-shrink-0" />
-                    {restaurantInfo.openingHours[day].isOpen ? (
-                      <span className="text-sm sm:text-base text-gray-900">
-                        {restaurantInfo.openingHours[day].open} - {restaurantInfo.openingHours[day].close}
-                      </span>
-                    ) : (
-                      <span className="text-sm sm:text-base text-orange-500">Closed</span>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div> */}
       </div>
     </div>
   );
