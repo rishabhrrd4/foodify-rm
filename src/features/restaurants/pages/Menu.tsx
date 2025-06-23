@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { Plus, Search, Edit, Trash2 } from "lucide-react";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import MenuItemModal from "../components/menu/MenuItemModal";
-import { fetchMenuItems, deleteMenuItem, type  MenuItem } from "../../../api/api"; 
+import { fetchMenuItems, deleteMenuItem, type MenuItem } from "../../../api/api"; 
 
 const Menu = () => {
   const [items, setItems] = useState<MenuItem[]>([]);
@@ -30,8 +32,11 @@ const Menu = () => {
       try {
         const data = await fetchMenuItems();
         setItems(data);
+        toast.success("Menu items loaded successfully");
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : "Failed to fetch menu items");
+        const errorMessage = err instanceof Error ? err.message : "Failed to fetch menu items";
+        setError(errorMessage);
+        toast.error(errorMessage);
       } finally {
         setIsLoading(false);
       }
@@ -63,16 +68,47 @@ const Menu = () => {
   };
 
   const handleDelete = async (itemId: string) => {
-    if (window.confirm("Are you sure you want to delete this item?")) {
-      try {
-        setIsLoading(true);
-        await deleteMenuItem(itemId);
-        setItems(items.filter(item => item.id !== itemId));
-      } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : "Failed to delete menu item");
-      } finally {
-        setIsLoading(false);
+    // Custom confirmation toast with buttons
+    toast.info(
+      <div>
+        <p className="mb-2">Are you sure you want to delete this item?</p>
+        <div className="flex gap-2 justify-end">
+          <button 
+            onClick={() => {
+              toast.dismiss();
+              performDelete(itemId);
+            }}
+            className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+          >
+            Delete
+          </button>
+          <button 
+            onClick={() => toast.dismiss()} 
+            className="px-3 py-1 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 text-sm"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>,
+      {
+        autoClose: false,
+        closeButton: false,
       }
+    );
+  };
+
+  const performDelete = async (itemId: string) => {
+    try {
+      setIsLoading(true);
+      await deleteMenuItem(itemId);
+      setItems(items.filter(item => item.id !== itemId));
+      toast.success("Menu item deleted successfully");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to delete menu item";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -215,7 +251,6 @@ const Menu = () => {
             {/* Item Details */}
             <div className="p-3 sm:p-4 flex flex-col flex-grow">
               <div className="flex justify-between items-start mb-1.5 sm:mb-2">
-                
                 <h3 className="font-semibold text-base sm:text-lg line-clamp-1">
                   {item.name}
                 </h3>
@@ -243,7 +278,6 @@ const Menu = () => {
                 </div>
               )}
 
-              
               {/* Action Buttons */}
               <div className="flex space-x-2 mt-auto pt-2">
                 <button
@@ -284,9 +318,11 @@ const Menu = () => {
           if (editingItem) {
             // Update existing item
             setItems(items.map(item => item.id === newItem.id ? newItem : item));
+            toast.success("Menu item updated successfully");
           } else {
             // Add new item
             setItems([...items, newItem]);
+            toast.success("Menu item added successfully");
           }
           setIsModalOpen(false);
         }}

@@ -1,77 +1,61 @@
+// restaurantSlice.ts
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
-export interface RestaurantInfo {
-  id: string;
+export interface RestaurantInfoT {
+  _id: string;
   name: string;
   description: string;
   address: string;
   phone: string;
-  email: string;
-  cuisine: string[];
-  openingHours: {
-    [key: string]: { open: string; close: string; isOpen: boolean };
+  imageKey: string;
+  location: {
+    type: string;
+    coordinates: [number, number];
   };
-  rating: number;
-  totalOrders: number;
-  image: string;
+  isActive: boolean;
+  isBlocked: boolean;
+  tags: string[];
+  managerId: string;
 }
 
 interface RestaurantState {
-  info: RestaurantInfo;
+  info: RestaurantInfoT | null;
   isLoading: boolean;
+  error: string | null;
 }
 
 const initialState: RestaurantState = {
-  info: {
-    id: "REST001",
-    name: "Fresh Eats",
-    description:
-      "An authentic North Indian dining experience, offering rich curries, tandoori delights, and traditional desserts crafted with the finest spices.",
-    address: "12/4 Vikas Marg, Lajpat Nagar, Delhi - 110024",
-    phone: "+91 11 2345 6789",
-    email: "contact@fresheats.in",
-    cuisine: ["North Indian", "Punjabi", "Mughlai"],
-    openingHours: {
-      monday: { open: "09:00", close: "23:00", isOpen: true },
-      tuesday: { open: "09:00", close: "23:00", isOpen: true },
-      wednesday: { open: "09:00", close: "23:00", isOpen: true },
-      thursday: { open: "09:00", close: "23:00", isOpen: true },
-      friday: { open: "09:00", close: "23:00", isOpen: true },
-      saturday: { open: "09:00", close: "23:00", isOpen: true },
-      sunday: { open: "10:00", close: "22:00", isOpen: true },
-    },
-    rating: 4.5,
-    totalOrders: 1247,
-    image:
-      "https://cdn.pixabay.com/photo/2017/09/16/03/52/indian-restaurant-2754269_1280.jpg",
-  },
+  info: null,
   isLoading: false,
+  error: null,
 };
 
 const restaurantSlice = createSlice({
   name: "restaurant",
   initialState,
   reducers: {
+    setRestaurantInfo: (state, action: PayloadAction<RestaurantInfoT>) => {
+      state.info = action.payload;
+    },
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.isLoading = action.payload;
+    },
+    setError: (state, action: PayloadAction<string>) => {
+      state.error = action.payload;
+    },
     updateRestaurantInfo: (
       state,
-      action: PayloadAction<Partial<RestaurantInfo>>
+      action: PayloadAction<Partial<RestaurantInfoT>>
     ) => {
-      state.info = { ...state.info, ...action.payload };
-    },
-    updateOpeningHours: (
-      state,
-      action: PayloadAction<{
-        day: string;
-        hours: { open: string; close: string; isOpen: boolean };
-      }>
-    ) => {
-      state.info.openingHours[action.payload.day] = action.payload.hours;
+      if (state.info) {
+        state.info = { ...state.info, ...action.payload };
+      }
     },
   },
 });
 
-export const { updateRestaurantInfo, updateOpeningHours } =
+export const { setRestaurantInfo, setLoading, setError, updateRestaurantInfo } =
   restaurantSlice.actions;
 
 export default restaurantSlice.reducer;

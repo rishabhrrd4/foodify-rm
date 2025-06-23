@@ -1,26 +1,43 @@
+
 import { TrendingUp, Clock, Star } from 'lucide-react';
 import { useAppSelector } from '../hooks/useAppSelector';
-import { BiRupee } from 'react-icons/bi';
 
 const Home = () => {
-  const restaurantInfo = useAppSelector(state => state.restaurant.info);
-  const activeOrders = useAppSelector(state => state.orders.activeOrders);
-  const orderHistory = useAppSelector(state => state.orders.orderHistory);
-  const menuItems = useAppSelector(state => state.menu.items);
+  const { activeOrders, orderHistory, restaurantInfo } = useAppSelector((state) => state.orders);
 
-  const todayRevenue = activeOrders.reduce((sum, order) => sum + order.totalAmount, 0);
-  const averageOrderValue = activeOrders.length > 0 ? todayRevenue / activeOrders.length : 0;
-  const availableItems = menuItems.filter(item => item.isAvailable).length;
+  // Helper function to check if date is today
+  const isToday = (dateString: string) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    return (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    );
+  };
 
+  // Calculate metrics
+  const completedToday = orderHistory.filter(order => isToday(order.orderTime));
+  const preparingOrders = activeOrders.filter(order => order.status === 'preparing').length;
+  const pendingOrders = activeOrders.filter(order => order.status === 'pending').length;
+  
+  // Calculate revenue from both active and completed orders today
+  const activeTodayRevenue = activeOrders.reduce((sum, order) => sum + order.totalAmount, 0);
+  const completedTodayRevenue = completedToday.reduce((sum, order) => sum + order.totalAmount, 0);
+  const todayRevenue = activeTodayRevenue + completedTodayRevenue;
+  
+  // Calculate average order value
+  const totalOrdersToday = activeOrders.length + completedToday.length;
+  const averageOrderValue = totalOrdersToday > 0 
+    ? todayRevenue / totalOrdersToday 
+    : 0;
   return (
     <div className="p-6 space-y-6">
-      {/* Welcome Section */}
       <section className="bg-gradient-to-r from-red-500 to-orange-500 rounded-lg p-6 text-white">
         <h1 className="text-3xl font-bold mb-2">Welcome back!</h1>
         <p className="text-red-100">Here's what's happening at {restaurantInfo.name} today</p>
       </section>
 
-      {/* Stats Grid */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Active Orders */}
         <div className="bg-white rounded-lg shadow p-4">
@@ -30,7 +47,11 @@ const Home = () => {
           </div>
           <div className="mt-4">
             <p className="text-2xl font-bold text-gray-900">{activeOrders.length}</p>
-            <p className="text-xs text-gray-500">{orderHistory.length} completed today</p>
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>Preparing: {preparingOrders}</span>
+              <span>Pending: {pendingOrders}</span>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">{completedToday.length} completed today</p>
           </div>
         </div>
 
@@ -38,11 +59,14 @@ const Home = () => {
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center justify-between pb-2 border-b border-gray-200">
             <h3 className="text-sm font-medium text-gray-700">Today's Revenue</h3>
-            <BiRupee className="h-5 w-5 text-gray-400" />
+           
           </div>
           <div className="mt-4">
-            <p className="text-2xl font-bold text-gray-900">₹{todayRevenue}</p>
-            <p className="text-xs text-gray-500">+12% from yesterday</p>
+            <p className="text-2xl font-bold text-gray-900">₹{todayRevenue.toFixed(2)}</p>
+            <div className="text-xs text-gray-500 space-y-1">
+              <p>From {totalOrdersToday} orders today</p>
+              <p>{completedToday.length} completed • {activeOrders.length} active</p>
+            </div>
           </div>
         </div>
 
@@ -54,7 +78,7 @@ const Home = () => {
           </div>
           <div className="mt-4">
             <p className="text-2xl font-bold text-gray-900">₹{Math.round(averageOrderValue)}</p>
-            <p className="text-xs text-gray-500">Based on {activeOrders.length} orders</p>
+            <p className="text-xs text-gray-500">Based on {totalOrdersToday} total orders</p>
           </div>
         </div>
 
@@ -66,7 +90,7 @@ const Home = () => {
           </div>
           <div className="mt-4">
             <p className="text-2xl font-bold text-gray-900">{restaurantInfo.rating}</p>
-            <p className="text-xs text-gray-500">{availableItems} items available</p>
+            <p className="text-xs text-gray-500">{restaurantInfo.totalOrders} total orders</p>
           </div>
         </div>
       </section>
@@ -81,12 +105,12 @@ const Home = () => {
           <div className="mt-4 space-y-4">
             {activeOrders.slice(0, 3).map(order => (
               <div
-                key={order.id}
+                key={order._id}
                 className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
               >
                 <div>
                   <p className="font-medium text-gray-900">{order.customerName}</p>
-                  <p className="text-sm text-gray-600">#{order.id}</p>
+                  <p className="text-sm text-gray-600">#{order._id}</p>
                 </div>
                 <div className="text-right">
                   <p className="font-semibold text-gray-900">₹{order.totalAmount}</p>
@@ -125,6 +149,14 @@ const Home = () => {
               <div>
                 <span className="text-gray-600">Total Orders:</span>
                 <p className="font-medium">{restaurantInfo.totalOrders}</p>
+              </div>
+              <div>
+                <span className="text-gray-600">Today's Revenue:</span>
+                <p className="font-medium">₹{restaurantInfo.todayRevenue.toFixed(2)}</p>
+              </div>
+              <div>
+                <span className="text-gray-600">Rating:</span>
+                <p className="font-medium">{restaurantInfo.rating}/5</p>
               </div>
             </div>
           </div>

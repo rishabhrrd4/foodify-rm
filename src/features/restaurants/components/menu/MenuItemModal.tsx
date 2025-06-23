@@ -21,6 +21,11 @@ const MenuItemModal = ({ isOpen, onClose, editingItem, onItemAdded }: MenuItemMo
   const [newTag, setNewTag] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState({
+    name: '',
+    description: '',
+    price: '',
+  });
 
   useEffect(() => {
     if (editingItem) {
@@ -42,10 +47,52 @@ const MenuItemModal = ({ isOpen, onClose, editingItem, onItemAdded }: MenuItemMo
     }
     setError(null);
     setNewTag('');
+    setValidationErrors({
+      name: '',
+      description: '',
+      price: '',
+    });
   }, [editingItem, isOpen]);
+
+  const validateForm = () => {
+    const errors = {
+      name: '',
+      description: '',
+      price: '',
+    };
+
+    let isValid = true;
+
+    // Validate name (2-30 characters)
+    if (formData.name.length < 2 || formData.name.length > 30) {
+      errors.name = 'Name must be between 2 and 30 characters';
+      isValid = false;
+    }
+
+    // Validate description (10-150 characters)
+    if (formData.description.length > 0 && 
+        (formData.description.length < 10 || formData.description.length > 150)) {
+      errors.description = 'Description must be between 10 and 150 characters';
+      isValid = false;
+    }
+
+    // Validate price (must be greater than 0)
+    if (formData.price <= 0) {
+      errors.price = 'Price must be greater than 0';
+      isValid = false;
+    }
+
+    setValidationErrors(errors);
+    return isValid;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
 
@@ -71,6 +118,14 @@ const MenuItemModal = ({ isOpen, onClose, editingItem, onItemAdded }: MenuItemMo
       ...prev, 
       [name]: name === 'price' ? Number(value) : value 
     }));
+
+    // Clear validation error when user starts typing
+    if (validationErrors[name as keyof typeof validationErrors]) {
+      setValidationErrors(prev => ({
+        ...prev,
+        [name]: '',
+      }));
+    }
   };
 
   const addTag = () => {
@@ -135,10 +190,13 @@ const MenuItemModal = ({ isOpen, onClose, editingItem, onItemAdded }: MenuItemMo
               type="text"
               value={formData.name}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className={`w-full px-3 py-2 border ${validationErrors.name ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500`}
               required
               disabled={isSubmitting}
             />
+            {validationErrors.name && (
+              <p className="mt-1 text-sm text-red-600">{validationErrors.name}</p>
+            )}
           </div>
 
           <div>
@@ -151,9 +209,12 @@ const MenuItemModal = ({ isOpen, onClose, editingItem, onItemAdded }: MenuItemMo
               rows={3}
               value={formData.description}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className={`w-full px-3 py-2 border ${validationErrors.description ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500`}
               disabled={isSubmitting}
             />
+            {validationErrors.description && (
+              <p className="mt-1 text-sm text-red-600">{validationErrors.description}</p>
+            )}
           </div>
 
           <div>
@@ -168,10 +229,13 @@ const MenuItemModal = ({ isOpen, onClose, editingItem, onItemAdded }: MenuItemMo
               step="0.01"
               value={formData.price}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className={`w-full px-3 py-2 border ${validationErrors.price ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500`}
               required
               disabled={isSubmitting}
             />
+            {validationErrors.price && (
+              <p className="mt-1 text-sm text-red-600">{validationErrors.price}</p>
+            )}
           </div>
 
           <div>

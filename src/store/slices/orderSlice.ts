@@ -1,104 +1,97 @@
-import { createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 export interface OrderItem {
-  id: string;
   name: string;
   quantity: number;
   price: number;
   specialInstructions?: string;
 }
 
-// export interface Order {
-//   id: string;
-//   customerName: string;
-//   customerPhone: string;
-//   items: OrderItem[];
-//   totalAmount: number;
-//   status:
-//     | "pending"
-//     | "accepted"
-//     | "preparing"
-//     | "ready"
-//     | "delivered"
-//     | "rejected";
-//   orderTime: string;
-//   estimatedDeliveryTime?: string;
-//   deliveryAddress: string;
-//   paymentMethod: string;
-// }
+export type OrderStatus = "pending" | "accepted" | "rejected" | "preparing" | "completed";
 
-export type Order = {
+export interface Order {
   _id: string;
   userId: string;
   restaurantId: string;
-  items: {
-    name: string;
-    quantity: number;
-    price: number;
-  }[];
-  itemTotal: number;
-  tax: number;
-  platformFee: number;
-  deliveryCharges: number;
-  discount: number;
-  subtotal: number;
-  total: number;
-  distanceInKm: number;
-  couponCode: string | null;
-  couponId: string | null;
-};
+  customerName: string;
+  items: OrderItem[];
+  totalAmount: number;
+  tax?: number;
+  status: OrderStatus;
+  orderTime: string;
+  deliveryAddress?: string;
+  paymentMethod?: string;
+}
+
+interface RestaurantInfo {
+  name: string;
+  description: string;
+  cuisine: string[];
+  totalOrders: number;
+  rating: number;
+  todayRevenue: number; // Added to track daily revenue
+}
 
 interface OrderState {
   activeOrders: Order[];
   orderHistory: Order[];
   notifications: Order[];
-  isLoading: boolean;
+  restaurantInfo: RestaurantInfo;
 }
 
 const initialState: OrderState = {
   activeOrders: [
     {
-      id: "ORD001",
-      customerName: "Amit Sharma",
-      customerPhone: "+91 9876543210",
+      _id: "ORD001",
+      userId: "USER001",
+      restaurantId: "REST001",
+      customerName: "Sumit",
       items: [
-        { id: "1", name: "Butter Chicken", quantity: 2, price: 349 },
-        { id: "3", name: "Dal Makhani", quantity: 1, price: 249 },
+        { name: "Pizza", quantity: 1, price: 250 },
+        { name: "Pasta", quantity: 2, price: 180 },
       ],
-      totalAmount: 947,
-      status: "pending",
+      totalAmount: 610,
+      status: "preparing",
       orderTime: new Date().toISOString(),
-      deliveryAddress: "123 Vikas Marg, Delhi",
-      paymentMethod: "Online",
     },
     {
-      id: "ORD002",
-      customerName: "Priya Verma",
-      customerPhone: "+91 9876543211",
-      items: [{ id: "2", name: "Paneer Tikka", quantity: 1, price: 299 }],
-      totalAmount: 299,
-      status: "preparing",
-      orderTime: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
-      deliveryAddress: "456 Connaught Place, Delhi",
-      paymentMethod: "Cash on Delivery",
+      _id: "ORD002",
+      userId: "USER002",
+      restaurantId: "REST001",
+      customerName: "Bobu Rao",
+      items: [
+        { name: "Burger", quantity: 1, price: 120 },
+        { name: "Fries", quantity: 1, price: 80 },
+      ],
+      totalAmount: 200,
+      status: "pending",
+      orderTime: new Date().toISOString(),
     },
   ],
   orderHistory: [
     {
-      id: "ORD003",
-      customerName: "Rahul Singh",
-      customerPhone: "+91 9876543212",
-      items: [{ id: "4", name: "Gulab Jamun", quantity: 1, price: 99 }],
-      totalAmount: 99,
-      status: "delivered",
-      orderTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      deliveryAddress: "789 Lajpat Nagar, Delhi",
-      paymentMethod: "Online",
+      _id: "ORD003",
+      userId: "USER003",
+      restaurantId: "REST001",
+      customerName: "Virat",
+      items: [
+        { name: "Salad", quantity: 1, price: 150 },
+        { name: "Soup", quantity: 1, price: 100 },
+      ],
+      totalAmount: 250,
+      status: "completed",
+      orderTime: new Date(Date.now() - 86400000).toISOString(), // Yesterday
     },
   ],
   notifications: [],
-  isLoading: false,
+  restaurantInfo: {
+    name: "King Kitchen",
+    description: "A delightful culinary experience with a variety of dishes.",
+    cuisine: ["Italian", "Indian", "Chinese"],
+    totalOrders: 1250,
+    rating: 4.5,
+    todayRevenue: 0, // Initialize today's revenue
+  },
 };
 
 const orderSlice = createSlice({
@@ -108,43 +101,51 @@ const orderSlice = createSlice({
     addOrder: (state, action: PayloadAction<Order>) => {
       state.activeOrders.push(action.payload);
       state.notifications.push(action.payload);
+      state.restaurantInfo.todayRevenue += action.payload.totalAmount;
     },
-    updateOrderStatus: (
-      state,
-      action: PayloadAction<{ id: string; status: Order["status"] }>
-    ) => {
-      const order = state.activeOrders.find(
-        (order) => order.id === action.payload.id
-      );
-      if (order) {
-        order.status = action.payload.status;
-        if (
-          action.payload.status === "delivered" ||
-          action.payload.status === "rejected"
-        ) {
-          state.orderHistory.unshift(order);
-          state.activeOrders = state.activeOrders.filter(
-            (o) => o.id !== action.payload.id
-          );
-        }
-      }
-    },
+    // In your orderSlice.ts reducers
+updateOrderStatus: (
+  state,
+  action: PayloadAction<{ id: string; status: OrderStatus }>
+) => {
+  const orderIndex = state.activeOrders.findIndex(
+    (order) => order._id === action.payload.id
+  );
+  
+  if (orderIndex !== -1) {
+    const order = state.activeOrders[orderIndex];
+    const updatedOrder = { 
+      ...order, 
+      status: action.payload.status 
+    };
+    
+    if (action.payload.status === "completed") {
+      // Add to today's revenue when order is completed
+      state.restaurantInfo.todayRevenue += order.totalAmount;
+      state.orderHistory.unshift(updatedOrder);
+      state.activeOrders.splice(orderIndex, 1);
+      state.restaurantInfo.totalOrders += 1;
+    } else {
+      state.activeOrders[orderIndex] = updatedOrder;
+    }
+  }
+},
     clearNotification: (state, action: PayloadAction<string>) => {
       state.notifications = state.notifications.filter(
-        (order) => order.id !== action.payload
+        (notification) => notification._id !== action.payload
       );
     },
-    clearAllNotifications: (state) => {
-      state.notifications = [];
+    resetDailyRevenue: (state) => {
+      state.restaurantInfo.todayRevenue = 0;
     },
   },
 });
 
-export const {
-  addOrder,
-  updateOrderStatus,
+export const { 
+  addOrder, 
+  updateOrderStatus, 
   clearNotification,
-  clearAllNotifications,
+  resetDailyRevenue
 } = orderSlice.actions;
 
 export default orderSlice.reducer;

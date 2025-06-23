@@ -1,152 +1,119 @@
-import { Clock, User, Phone, MapPin, CreditCard } from 'lucide-react';
+import { User, MapPin, CreditCard } from 'lucide-react';
+import { BiRupee } from 'react-icons/bi';
 import { useAppSelector, useAppDispatch } from '../hooks/useAppSelector';
 import { updateOrderStatus } from '../../../store/slices/orderSlice';
-import type { Order } from '../../../store/slices/orderSlice';
+import type { OrderStatus } from '../../../store/slices/orderSlice';
 
 const Orders = () => {
   const dispatch = useAppDispatch();
   const activeOrders = useAppSelector(state => state.orders.activeOrders);
 
-  const handleStatusUpdate = (orderId: string, status: Order['status']) => {
-    dispatch(updateOrderStatus({ id: orderId, status }));
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'accepted': return 'bg-blue-100 text-blue-800';
-      case 'preparing': return 'bg-orange-100 text-orange-800';
-      case 'ready': return 'bg-green-100 text-green-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getNextStatus = (currentStatus: string) => {
-    switch (currentStatus) {
-      case 'pending': return 'accepted';
-      case 'accepted': return 'preparing';
-      case 'preparing': return 'ready';
-      case 'ready': return 'delivered';
-      default: return null;
-    }
-  };
-
-  const getActionLabel = (status: string) => {
-    switch (status) {
-      case 'pending': return 'Accept Order';
-      case 'accepted': return 'Start Preparing';
-      case 'preparing': return 'Mark Ready';
-      case 'ready': return 'Mark Delivered';
-      default: return null;
-    }
+  const handleStatusUpdate = (id: string, status: OrderStatus) => {
+    dispatch(updateOrderStatus({ id, status }));
   };
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Active Orders</h1>
-        <p className="text-gray-600">Manage your current orders</p>
-      </div>
-
-      {activeOrders.length === 0 ? (
-        <div className="bg-white shadow rounded-lg p-12 text-center">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No active orders</h3>
-          <p className="text-gray-600">New orders will appear here when customers place them.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {activeOrders.map((order) => (
-            <div key={order.id} className="bg-white shadow rounded-lg overflow-hidden flex flex-col">
-              {/* Header */}
-              <div className="flex justify-between items-start px-6 py-4 border-b border-gray-200">
+      <h1 className="text-2xl font-bold">Active Orders</h1>
+      
+      <div className="space-y-4">
+        {activeOrders.length === 0 ? (
+          <p className="text-gray-500">No active orders</p>
+        ) : (
+          activeOrders.map((order) => (
+            <div key={order._id} className="bg-white p-4 rounded-lg shadow">
+              <div className="flex justify-between items-start mb-2">
                 <div>
-                  <h2 className="text-lg font-semibold">Order #{order.id}</h2>
-                  <div className="flex items-center text-sm text-gray-600 mt-1">
-                    <Clock className="h-4 w-4 mr-1" />
-                    {new Date(order.orderTime).toLocaleTimeString()}
-                  </div>
+                  <h3 className="font-semibold">Order #{order._id}</h3>
+                  <p className="text-sm text-gray-600">{order.customerName}</p>
                 </div>
-                <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(order.status)}`}>
-                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                <span className={`px-2 py-1 text-xs rounded-full ${
+                  order.status === 'pending' 
+                    ? 'bg-yellow-100 text-yellow-800' 
+                    : order.status === 'preparing' 
+                    ? 'bg-blue-100 text-blue-800' 
+                    : 'bg-green-100 text-green-800'
+                }`}>
+                  {order.status}
                 </span>
               </div>
 
-              {/* Content */}
-              <div className="p-6 space-y-6 flex-grow flex flex-col justify-between">
-                {/* Customer Info */}
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2 text-gray-700">
-                    <User className="h-4 w-4 text-gray-400" />
-                    <span className="font-medium">{order.customerName}</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-gray-700">
-                    <Phone className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm">{order.customerPhone}</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-gray-700">
-                    <MapPin className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm">{order.deliveryAddress}</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-gray-700">
-                    <CreditCard className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm">{order.paymentMethod}</span>
-                  </div>
+              <div className="grid grid-cols-2 gap-4 mb-3 text-sm">
+                <div className="flex items-center text-gray-600">
+                  <User className="w-4 h-4 mr-2" />
+                  <span>{order.userId}</span>
                 </div>
+                <div className="flex items-center text-gray-600">
+                  <BiRupee className="w-4 h-4 mr-2" />
+                  <span>{order.totalAmount}</span>
+                </div>
+                {order.deliveryAddress && (
+                  <div className="flex items-center text-gray-600 col-span-2">
+                    <MapPin className="w-4 h-4 mr-2" />
+                    <span>{order.deliveryAddress}</span>
+                  </div>
+                )}
+                {order.paymentMethod && (
+                  <div className="flex items-center text-gray-600">
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    <span>{order.paymentMethod}</span>
+                  </div>
+                )}
+              </div>
 
-                {/* Items */}
-                <div>
-                  <h4 className="font-medium mb-2 text-gray-800">Items:</h4>
-                  <div className="space-y-2">
-                    {order.items.map((item) => (
-                      <div key={item.id} className="flex justify-between items-center bg-gray-50 p-2 rounded">
-                        <div>
-                          <span className="font-medium">{item.name}</span>
-                          <span className="text-gray-600 ml-2">x{item.quantity}</span>
-                        </div>
-                        <span className="font-medium">₹{item.price * item.quantity}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-200">
-                    <span className="font-semibold text-gray-900">Total Amount:</span>
-                    <span className="font-bold text-lg text-green-600">₹{order.totalAmount}</span>
-                  </div>
-                </div>
+              <div className="mb-3">
+                <h4 className="text-sm font-medium mb-1">Items:</h4>
+                <ul className="text-sm space-y-1">
+                  {order.items.map((item, index) => (
+                    <li key={index} className="flex justify-between">
+                      <span>
+                        {item.name} x{item.quantity}
+                        {item.specialInstructions && (
+                          <span className="text-xs text-gray-500 ml-2">({item.specialInstructions})</span>
+                        )}
+                      </span>
+                      <span>₹{item.price * item.quantity}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
-                {/* Action Buttons */}
-                <div className="flex space-x-3 pt-4">
-                  {order.status === 'pending' ? (
-                    <>
-                      <button
-                        onClick={() => handleStatusUpdate(order.id, 'accepted')}
-                        className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded cursor-pointer"
-                      >
-                        Accept Order
-                      </button>
-                      <button
-                        onClick={() => handleStatusUpdate(order.id, 'rejected')}
-                        className="flex-1 border border-red-600 text-red-600 hover:bg-red-50 font-semibold py-2 rounded cursor-pointer"
-                      >
-                        Reject
-                      </button>
-                    </>
-                  ) : (
-                    getNextStatus(order.status) && (
-                      <button
-                        onClick={() => handleStatusUpdate(order.id, getNextStatus(order.status)!)}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded cursor-pointer"
-                      >
-                        {getActionLabel(order.status)}
-                      </button>
-                    )
-                  )}
-                </div>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handleStatusUpdate(order._id, 'pending')}
+                  className={`px-3 py-1 text-sm rounded ${
+                    order.status === 'pending' 
+                      ? 'bg-yellow-500 text-white' 
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}
+                >
+                  Pending
+                </button>
+                <button
+                  onClick={() => handleStatusUpdate(order._id, 'preparing')}
+                  className={`px-3 py-1 text-sm rounded ${
+                    order.status === 'preparing' 
+                      ? 'bg-blue-500 text-white' 
+                      : 'bg-blue-100 text-blue-800'
+                  }`}
+                >
+                  Preparing
+                </button>
+                <button
+                  onClick={() => handleStatusUpdate(order._id, 'completed')}
+                  className={`px-3 py-1 text-sm rounded ${
+                    order.status === 'completed' 
+                      ? 'bg-green-500 text-white' 
+                      : 'bg-green-100 text-green-800'
+                  }`}
+                >
+                  Complete
+                </button>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
     </div>
   );
 };

@@ -4,7 +4,7 @@ import {
   FaHome,
   FaUtensils,
   FaListAlt,
-  FaHistory,
+  // FaHistory,
   FaInfoCircle,
   FaBars,
   FaTimes,
@@ -21,7 +21,7 @@ const Sidebar = () => {
     { name: "Home", href: "/restaurant", icon: FaHome },
     { name: "Menu", href: "/restaurant/menu", icon: FaUtensils },
     { name: "Orders", href: "/restaurant/orders", icon: FaListAlt },
-    { name: "Order History", href: "/restaurant/order-history", icon: FaHistory },
+    // { name: "Order History", href: "/restaurant/order-history", icon: FaHistory },
     { name: "Restaurant Info", href: "/restaurant/restaurant-info", icon: FaInfoCircle },
   ];
 

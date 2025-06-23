@@ -6,7 +6,7 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    https: false, // ✅ Explicitly disable HTTPS
+    // https: false, // ✅ Explicitly disable HTTPS
     port: 5175,   // (optional) choose your port
   },
 })

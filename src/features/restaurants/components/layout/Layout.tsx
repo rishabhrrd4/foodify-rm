@@ -1,6 +1,6 @@
 import Sidebar from "./Sidebar";
 import Header from "./Header";
-import OrderNotification from "./../notifications/OrderNotification";
+// import OrderNotification from "./../notifications/OrderNotification";
 import { useEffect } from "react";
 import { useAppSelector } from "../../hooks/useAppSelector";
 import { websocketService } from "../../../../services/websocket";
@@ -13,19 +13,19 @@ const Layout = ({ children }: LayoutProps) => {
   const restaurantInfo = useAppSelector((state) => state.restaurant?.info);
 
   useEffect(() => {
-    if (restaurantInfo?.id) {
+    if (restaurantInfo?._id) {
       // Connect to WebSocket when component mounts and restaurant ID is available
       // const handleSocket = () => {
       //   alert("Hii")
       // };
-      websocketService.connect(restaurantInfo.id);
+      websocketService.connect(restaurantInfo._id);
 
       // Cleanup on unmount
       // return () => {
       //   websocketService.disconnect();
       // };
     }
-  }, [restaurantInfo?.id]);
+  }, [restaurantInfo?._id]);
 
   return (
     <div className="flex h-screen bg-gray-50 ">
@@ -34,7 +34,7 @@ const Layout = ({ children }: LayoutProps) => {
         <Header />
         <main className="flex-1 overflow-auto p-4 pb-30">{children}</main>
       </div>
-      <OrderNotification />
+      {/* <OrderNotification /> */}
     </div>
   );
 };

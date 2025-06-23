@@ -24,8 +24,16 @@ import Dashboard from "../features/admin/dashboard/Dashboard";
 import Home from "../features/restaurants/pages/Home";
 import Menu from "../features/restaurants/pages/Menu";
 import Orders from "../features/restaurants/pages/Orders";
-import OrderHistory from "../features/restaurants/pages/OrderHistory";
-import RestaurantInfo from "../features/restaurants/pages/RestaurantInfo";
+// import OrderHistory from "../features/restaurants/pages/OrderHistory";
+
+
+import  RestaurantInfo from "../features/restaurants/pages/RestaurantInfo";
+
+
+import  ManagerProfile from "../features/restaurants/pages/ManagerProfile";
+
+
+
 import Notifications from "../features/restaurants/pages/Notifications";
 
 // Manager login/signup pages
@@ -111,8 +119,12 @@ const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: "menu", element: <Menu /> },
       { path: "orders", element: <Orders /> },
-      { path: "order-history", element: <OrderHistory /> },
-      { path: "restaurant-info", element: <RestaurantInfo /> },
+      // { path: "order-history", element: <OrderHistory /> },
+     
+       { path: "restaurant-info", element: <RestaurantInfo /> },
+
+      { path: "manager-info", element: <ManagerProfile /> },
+
       { path: "notifications", element: <Notifications /> },
     ],
   },
