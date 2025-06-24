@@ -18,13 +18,10 @@ const OrderNotification = () => {
 
   const handleDismiss = useCallback(
     (orderId: string) => {
-      // Immediately remove from visible state for instant UI removal
       setVisibleNotifications((prev) => prev.filter((id) => id !== orderId));
-      // Then, after a short delay, clear it from Redux state
-      // This delay can be used if you have exit animations before full removal
       setTimeout(() => {
         dispatch(clearNotification(orderId));
-      }, 300); // Keep this delay if you want a short animation before it's truly gone from state
+      }, 300);
     },
     [dispatch]
   );
@@ -36,7 +33,6 @@ const OrderNotification = () => {
       if (!visibleNotifications.includes(newNotification._id)) {
         setVisibleNotifications((prev) => [...prev, newNotification._id]);
         // Set a timeout for auto-dismissal after 10 seconds
-        // This will call handleDismiss, which immediately removes it from UI
         setTimeout(() => handleDismiss(newNotification._id), 10000);
       }
     }
@@ -45,14 +41,12 @@ const OrderNotification = () => {
   const handleAccept = (orderId: string) => {
     dispatch(updateOrderStatus({ id: orderId, status: "accepted" }));
     websocketService.handleOrderAccept(orderId);
-    // Call handleDismiss, which now instantly removes the card from the UI
     handleDismiss(orderId);
   };
 
   const handleReject = (orderId: string) => {
     dispatch(updateOrderStatus({ id: orderId, status: "rejected" }));
     websocketService.handleOrderReject(orderId);
-    // Call handleDismiss, which now instantly removes the card from the UI
     handleDismiss(orderId);
   };
 
@@ -111,8 +105,9 @@ const OrderNotification = () => {
           <div className="mb-4">
             <h4 className="text-sm font-medium text-gray-900 mb-2">Items:</h4>
             <div className="space-y-1 text-sm">
-              {order.items.map((item: any, index: number) => (
-                <div key={index} className="flex justify-between">
+              {order.items.map((item: any) => (
+                <div key={item._id} className="flex justify-between">
+                  {" "}
                   <span>
                     {item.name} x{item.quantity}
                   </span>
