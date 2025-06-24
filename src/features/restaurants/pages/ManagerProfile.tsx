@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { User, Edit, Save, X } from 'lucide-react';
 import axios from 'axios';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface ManagerProfile {
   _id: string;
@@ -16,20 +18,29 @@ const ManagerProfile = () => {
   const [editedProfile, setEditedProfile] = useState<Partial<ManagerProfile>>({});
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
   const token = localStorage.getItem('managerAccessToken');
 
   // Fetch manager profile
   useEffect(() => {
     const fetchProfile = async () => {
       try {
+        setIsLoading(true);
         const response = await axios.get('http://localhost:3005/manager', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setProfile(response.data);
         setEditedProfile(response.data);
+        toast.success('Profile loaded successfully');
       } catch (err) {
-        setError('Failed to load profile');
+        const errorMessage = axios.isAxiosError(err)
+          ? err.response?.data?.message || 'Failed to load profile'
+          : 'Failed to load profile';
+        toast.error(errorMessage);
+        
+        // Handle specific error cases
+        if (axios.isAxiosError(err) && err.response?.status === 401) {
+          toast.error('Please login again');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -38,19 +49,45 @@ const ManagerProfile = () => {
     fetchProfile();
   }, [token]);
 
-
-
   // Handle profile update
   const handleUpdate = async () => {
+    if (!profile?._id) {
+      toast.error('No profile data available');
+      return;
+    }
+
     try {
       setIsLoading(true);
-      await axios.put('http://localhost:3005/manager/update', editedProfile, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setProfile(prev => ({ ...prev!, ...editedProfile }));
+      const { data } = await axios.put(
+        `http://localhost:3005/manager/update/${profile._id}`,
+        editedProfile,
+        {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      setProfile(data);
+      setEditedProfile(data);
       setIsEditing(false);
+      toast.success('Profile updated successfully');
     } catch (err) {
-      setError('Failed to update profile');
+      let errorMessage = 'Failed to update profile';
+      
+      if (axios.isAxiosError(err)) {
+        errorMessage = err.response?.data?.message || errorMessage;
+        
+        // Handle specific backend errors
+        if (err.response?.status === 403) {
+          errorMessage = 'You are not authorized to update this profile';
+        } else if (err.response?.status === 500) {
+          errorMessage = 'Server error occurred while updating';
+        }
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -62,7 +99,16 @@ const ManagerProfile = () => {
     setEditedProfile(prev => ({ ...prev, [name]: value }));
   };
 
-  if (isLoading) {
+  // Handle cancel editing
+  const handleCancel = () => {
+    if (profile) {
+      setEditedProfile(profile);
+    }
+    setIsEditing(false);
+    toast.info('Changes discarded');
+  };
+
+  if (isLoading && !profile) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
@@ -72,6 +118,18 @@ const ManagerProfile = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <ToastContainer 
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       
       <div className="py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
@@ -88,15 +146,15 @@ const ManagerProfile = () => {
 
             {/* Profile Content */}
             <div className="px-6 py-8">
-              {error && (
-                <div className="mb-6 p-3 bg-red-100 text-red-700 rounded">
-                  {error}
-                </div>
-              )}
-
               {!profile ? (
                 <div className="text-center py-8">
                   <p className="text-red-500">Profile not found</p>
+                  <button 
+                    onClick={() => window.location.reload()}
+                    className="mt-4 px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600"
+                  >
+                    Try Again
+                  </button>
                 </div>
               ) : (
                 <div className="space-y-6">
@@ -123,7 +181,8 @@ const ManagerProfile = () => {
                             {isLoading ? 'Saving...' : 'Save'}
                           </button>
                           <button
-                            onClick={() => setIsEditing(false)}
+                            onClick={handleCancel}
+                            disabled={isLoading}
                             className="flex items-center px-3 py-1 border border-gray-300 rounded text-gray-700 hover:bg-gray-50"
                           >
                             <X className="h-4 w-4 mr-1" />
@@ -143,6 +202,7 @@ const ManagerProfile = () => {
                             value={editedProfile.name || ''}
                             onChange={handleChange}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                            required
                           />
                         ) : (
                           <p className="mt-1 text-sm text-gray-900">{profile.name}</p>
@@ -158,6 +218,7 @@ const ManagerProfile = () => {
                             value={editedProfile.email || ''}
                             onChange={handleChange}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                            required
                           />
                         ) : (
                           <p className="mt-1 text-sm text-gray-900">{profile.email}</p>

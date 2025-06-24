@@ -1,9 +1,12 @@
 import { Bell, User, ChevronDown } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const Header = () => {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -16,16 +19,35 @@ const Header = () => {
     setShowDropdown(false);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("managerAccessToken");
-    localStorage.removeItem("managerRefreshToken");
-    localStorage.removeItem("restaurantId");
-    localStorage.removeItem("managerId");
-    localStorage.removeItem("userLatitude");
-    localStorage.removeItem("userLongitude");
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      const refreshToken = localStorage.getItem("managerRefreshToken");
+      await axios.post("http://localhost:3005/manager/logout", {
+        refreshToken
+      }, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("managerAccessToken")}`
+        }
+      });
 
-    setShowDropdown(false);
-    navigate("/manager/login");
+      // Clear local storage
+      localStorage.removeItem("managerAccessToken");
+      localStorage.removeItem("managerRefreshToken");
+      localStorage.removeItem("restaurantId");
+      localStorage.removeItem("managerId");
+      localStorage.removeItem("userLatitude");
+      localStorage.removeItem("userLongitude");
+
+      setShowDropdown(false);
+      navigate("/manager/login");
+      toast.success("Logged out successfully");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      toast.error("Logout failed. Please try again.");
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   const toggleDropdown = () => {
@@ -58,12 +80,11 @@ const Header = () => {
         <div className="flex items-center gap-3 sm:gap-4 ml-auto">
           {/* Notification Bell */}
           <div className="relative">
-            <button className="p-2 rounded-full hover:bg-gray-200 relative">
-              <Bell
-                className="h-6 w-6 text-gray-600 cursor-pointer"
-                onClick={handleNotificationClick}
-              />
-              
+            <button 
+              className="p-2 rounded-full hover:bg-gray-200 relative"
+              onClick={handleNotificationClick}
+            >
+              <Bell className="h-6 w-6 text-gray-600 cursor-pointer" />
             </button>
           </div>
 
@@ -72,6 +93,7 @@ const Header = () => {
             <button
               onClick={toggleDropdown}
               className="flex items-center gap-3 hover:bg-gray-200 rounded-lg px-2 py-1"
+              disabled={isLoggingOut}
             >
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-medium text-orange-500">
@@ -98,9 +120,14 @@ const Header = () => {
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                  disabled={isLoggingOut}
+                  className={`block w-full text-left px-4 py-2 text-sm ${
+                    isLoggingOut 
+                      ? "text-gray-400 cursor-not-allowed" 
+                      : "text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                  }`}
                 >
-                  Logout
+                  {isLoggingOut ? "Logging out..." : "Logout"}
                 </button>
               </div>
             )}
