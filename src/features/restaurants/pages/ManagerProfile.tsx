@@ -5,17 +5,22 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 interface ManagerProfile {
-  _id: string;
   name: string;
   email: string;
-  accountNumber?: string;
-  ifscCode?: string;
-  bankName?: string;
+  accountNumber: string;
+  ifscCode: string;
+  bankName: string;
 }
 
 const ManagerProfile = () => {
   const [profile, setProfile] = useState<ManagerProfile | null>(null);
-  const [editedProfile, setEditedProfile] = useState<Partial<ManagerProfile>>({});
+  const [editedProfile, setEditedProfile] = useState<ManagerProfile>({
+    name: '',
+    email: '',
+    accountNumber: '',
+    ifscCode: '',
+    bankName: ''
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const token = localStorage.getItem('managerAccessToken');
@@ -26,41 +31,77 @@ const ManagerProfile = () => {
       try {
         setIsLoading(true);
         const response = await axios.get('http://localhost:3005/manager', {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         });
-        setProfile(response.data);
-        setEditedProfile(response.data);
-        toast.success('Profile loaded successfully');
-      } catch (err) {
-        const errorMessage = axios.isAxiosError(err)
-          ? err.response?.data?.message || 'Failed to load profile'
-          : 'Failed to load profile';
-        toast.error(errorMessage);
         
-        // Handle specific error cases
-        if (axios.isAxiosError(err) && err.response?.status === 401) {
-          toast.error('Please login again');
+        if (response.data?.data) {
+          const profileData = response.data.data;
+          setProfile(profileData);
+          setEditedProfile({
+            name: profileData.name || '',
+            email: profileData.email || '',
+            accountNumber: profileData.accountNumber || '',
+            ifscCode: profileData.ifscCode || '',
+            bankName: profileData.bankName || ''
+          });
+          toast.success(response.data.message || 'Profile loaded successfully');
+        } else {
+          toast.error('No profile data received');
         }
+      } catch (err) {
+        let errorMessage = 'Failed to load profile';
+        
+        if (axios.isAxiosError(err)) {
+          errorMessage = err.response?.data?.message || errorMessage;
+          
+          if (err.response?.status === 401) {
+            errorMessage = 'Please login again';
+          } else if (err.response?.status === 404) {
+            errorMessage = 'Profile not found';
+          }
+        }
+        
+        toast.error(errorMessage);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchProfile();
+    if (token) {
+      fetchProfile();
+    } else {
+      toast.error('Authentication token missing');
+      setIsLoading(false);
+    }
   }, [token]);
 
   // Handle profile update
   const handleUpdate = async () => {
-    if (!profile?._id) {
+    if (!profile) {
       toast.error('No profile data available');
+      return;
+    }
+
+    // Validate required fields
+    if (!editedProfile.name || !editedProfile.email) {
+      toast.error('Please fill all required fields');
       return;
     }
 
     try {
       setIsLoading(true);
       const { data } = await axios.put(
-        `http://localhost:3005/manager/update/${profile._id}`,
-        editedProfile,
+        `http://localhost:3005/manager/update`,
+        {
+          name: editedProfile.name,
+          email: editedProfile.email,
+          accountNumber: editedProfile.accountNumber,
+          ifscCode: editedProfile.ifscCode,
+          bankName: editedProfile.bankName
+        },
         {
           headers: { 
             Authorization: `Bearer ${token}`,
@@ -69,21 +110,28 @@ const ManagerProfile = () => {
         }
       );
       
-      setProfile(data);
-      setEditedProfile(data);
+      if (data?.data) {
+        const updatedProfile = data.data;
+        setProfile(updatedProfile);
+        setEditedProfile(updatedProfile);
+        toast.success(data.message || 'Profile updated successfully');
+      } else {
+        toast.error('Update failed - no data received');
+      }
+      
       setIsEditing(false);
-      toast.success('Profile updated successfully');
     } catch (err) {
       let errorMessage = 'Failed to update profile';
       
       if (axios.isAxiosError(err)) {
         errorMessage = err.response?.data?.message || errorMessage;
         
-        // Handle specific backend errors
-        if (err.response?.status === 403) {
+        if (err.response?.status === 400) {
+          errorMessage = 'Validation error: ' + (err.response.data.errors?.join(', ') || errorMessage);
+        } else if (err.response?.status === 403) {
           errorMessage = 'You are not authorized to update this profile';
         } else if (err.response?.status === 500) {
-          errorMessage = 'Server error occurred while updating';
+          errorMessage = 'Server error occurred';
         }
       }
       
@@ -194,12 +242,12 @@ const ManagerProfile = () => {
 
                     <div className="grid grid-cols-1 gap-y-4 gap-x-6 sm:grid-cols-2">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Name</label>
+                        <label className="block text-sm font-medium text-gray-700">Name*</label>
                         {isEditing ? (
                           <input
                             type="text"
                             name="name"
-                            value={editedProfile.name || ''}
+                            value={editedProfile.name}
                             onChange={handleChange}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                             required
@@ -210,12 +258,12 @@ const ManagerProfile = () => {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Email</label>
+                        <label className="block text-sm font-medium text-gray-700">Email*</label>
                         {isEditing ? (
                           <input
                             type="email"
                             name="email"
-                            value={editedProfile.email || ''}
+                            value={editedProfile.email}
                             onChange={handleChange}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                             required
@@ -237,7 +285,7 @@ const ManagerProfile = () => {
                           <input
                             type="text"
                             name="accountNumber"
-                            value={editedProfile.accountNumber || ''}
+                            value={editedProfile.accountNumber}
                             onChange={handleChange}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                           />
@@ -254,7 +302,7 @@ const ManagerProfile = () => {
                           <input
                             type="text"
                             name="ifscCode"
-                            value={editedProfile.ifscCode || ''}
+                            value={editedProfile.ifscCode}
                             onChange={handleChange}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                           />
@@ -271,7 +319,7 @@ const ManagerProfile = () => {
                           <input
                             type="text"
                             name="bankName"
-                            value={editedProfile.bankName || ''}
+                            value={editedProfile.bankName}
                             onChange={handleChange}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                           />

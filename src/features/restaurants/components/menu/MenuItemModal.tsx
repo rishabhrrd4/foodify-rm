@@ -9,12 +9,14 @@ interface MenuItemModalProps {
   onItemAdded: (item: MenuItem) => void;
 }
 
+const placeholderImg='https://thumbs.dreamstime.com/b/logo-fresh-food-farm-vector-illustration-white-background-140863729.jpg';
+
 const MenuItemModal = ({ isOpen, onClose, editingItem, onItemAdded }: MenuItemModalProps) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: 0,
-    imageUrl: '/placeholder.svg',
+    imageUrl: placeholderImg,
     tags: [] as string[],
   });
 
@@ -33,7 +35,7 @@ const MenuItemModal = ({ isOpen, onClose, editingItem, onItemAdded }: MenuItemMo
         name: editingItem.name || '',
         description: editingItem.description || '',
         price: editingItem.price || 0,
-        imageUrl: editingItem.imageUrl || '/placeholder.svg',
+        imageUrl: editingItem.imageUrl || placeholderImg,
         tags: editingItem.tags || [],
       });
     } else {
@@ -41,8 +43,8 @@ const MenuItemModal = ({ isOpen, onClose, editingItem, onItemAdded }: MenuItemMo
         name: '',
         description: '',
         price: 0,
-        imageUrl: '/placeholder.svg',
-        tags: [],
+        imageUrl: placeholderImg,
+        tags: ["Veg"],
       });
     }
     setError(null);
@@ -69,9 +71,9 @@ const MenuItemModal = ({ isOpen, onClose, editingItem, onItemAdded }: MenuItemMo
       isValid = false;
     }
 
-    // Validate description (10-150 characters)
+    // Validate description (10-250 characters)
     if (formData.description.length > 0 && 
-        (formData.description.length < 10 || formData.description.length > 150)) {
+        (formData.description.length < 10 || formData.description.length > 250)) {
       errors.description = 'Description must be between 10 and 150 characters';
       isValid = false;
     }
@@ -249,7 +251,7 @@ const MenuItemModal = ({ isOpen, onClose, editingItem, onItemAdded }: MenuItemMo
               value={formData.imageUrl}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-              placeholder="/placeholder.svg"
+              placeholder="placeholderImg"
               disabled={isSubmitting}
             />
           </div>
