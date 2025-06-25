@@ -1,4 +1,3 @@
-// src/routes/AppRoutes.tsx
 import { createBrowserRouter, RouterProvider, Outlet, Navigate } from "react-router-dom";
 
 import AppLayout from "../layouts/AppLayout";
@@ -22,14 +21,12 @@ import OrderHistory from "../features/restaurants/pages/OrderHistory";
 import RestaurantInfo from "../features/restaurants/pages/RestaurantInfo";
 import Notifications from "../features/restaurants/pages/Notifications";
 
-// Manager login/signup pages
 import ManagerLoginPage from "../features/manager/Login";
 import ManagerSignupPage from "../features/manager/Register";
 import ForgotPassword from "../features/manager/ForgotPassword";
 import ResetPasswordPage from "../features/manager/ResetPassword";
 import CreateRestaurantPage from "../features/manager/CreateRestaurantPage";
 
-// Import the ProtectedRoute component
 import ProtectedRoute from "../routes/ProtectedRoute"; // Adjust the path as necessary
 
 const router = createBrowserRouter([
@@ -68,13 +65,12 @@ const router = createBrowserRouter([
 
 
   // PROTECTED ROUTES BELOW THIS POINT
-  // Admin Protected Routes
   {
     path: "/admin",
-    element: <ProtectedRoute />, // Protects all children of /admin
+    element: <ProtectedRoute />,
     children: [
       {
-        element: <AdminLayout />, // AdminLayout is rendered if authenticated
+        element: <AdminLayout />, 
         children: [
           { index: true, element: <Dashboard /> },
           { path: "orders", element: <OrderManagmentPage /> },
@@ -83,19 +79,17 @@ const router = createBrowserRouter([
     ],
   },
 
-  // Protected Restaurant Manager specific routes (after initial setup/login)
   {
     path: "/create-restaurant",
-    element: <ProtectedRoute />, // Protects the create restaurant page
+    element: <ProtectedRoute />, 
     children: [
       { index: true, element: <CreateRestaurantPage /> },
     ]
   },
 
-  // Protected Restaurant (customer/staff) related routes
   {
     path: "/restaurant",
-    element: <ProtectedRoute />, // Protects all children of /restaurant
+    element: <ProtectedRoute />,
     children: [
       {
         element: (
