@@ -290,3 +290,11 @@ const RestaurantInfo = () => {
 };
 
 export default RestaurantInfo;
+
+
+
+// Apex chart  dropdown -> filter-> weekly,monthly,6 months   line chart  , pi chart,   on hover show details, change color of chart
+//  auth0
+
+// my work 
+// drag and drop 

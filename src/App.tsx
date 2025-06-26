@@ -19,7 +19,7 @@ function App() {
         pauseOnFocusLoss
         draggable
         pauseOnHover
-      />right
+      />
     </div>
   );
 }

@@ -1,169 +1,186 @@
 
-import { TrendingUp, Clock, Star } from 'lucide-react';
-import { useAppSelector } from '../hooks/useAppSelector';
+// import { TrendingUp, Clock, Star } from 'lucide-react';
+// import { useAppSelector } from '../hooks/useAppSelector';
+
+// const Home = () => {
+//   const { activeOrders, orderHistory, restaurantInfo } = useAppSelector((state) => state.orders);
+
+//   // Helper function to check if date is today
+//   const isToday = (dateString: string) => {
+//     const date = new Date(dateString);
+//     const today = new Date();
+//     return (
+//       date.getDate() === today.getDate() &&
+//       date.getMonth() === today.getMonth() &&
+//       date.getFullYear() === today.getFullYear()
+//     );
+//   };
+
+//   // Calculate metrics
+//   const completedToday = orderHistory.filter(order => isToday(order.orderTime));
+//   const preparingOrders = activeOrders.filter(order => order.status === 'preparing').length;
+//   const pendingOrders = activeOrders.filter(order => order.status === 'pending').length;
+  
+//   // Calculate revenue from both active and completed orders today
+//   const activeTodayRevenue = activeOrders.reduce((sum, order) => sum + order.totalAmount, 0);
+//   const completedTodayRevenue = completedToday.reduce((sum, order) => sum + order.totalAmount, 0);
+//   const todayRevenue = activeTodayRevenue + completedTodayRevenue;
+  
+//   // Calculate average order value
+//   const totalOrdersToday = activeOrders.length + completedToday.length;
+//   const averageOrderValue = totalOrdersToday > 0 
+//     ? todayRevenue / totalOrdersToday 
+//     : 0;
+//   return (
+//     <div className="p-6 space-y-6">
+//       <section className="bg-gradient-to-r from-red-500 to-orange-500 rounded-lg p-6 text-white">
+//         <h1 className="text-3xl font-bold mb-2">Welcome back!</h1>
+//         <p className="text-red-100">Here's what's happening at {restaurantInfo.name} today</p>
+//       </section>
+
+//       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+//         {/* Active Orders */}
+//         <div className="bg-white rounded-lg shadow p-4">
+//           <div className="flex items-center justify-between pb-2 border-b border-gray-200">
+//             <h3 className="text-sm font-medium text-gray-700">Active Orders</h3>
+//             <Clock className="h-5 w-5 text-gray-400" />
+//           </div>
+//           <div className="mt-4">
+//             <p className="text-2xl font-bold text-gray-900">{activeOrders.length}</p>
+//             <div className="flex justify-between text-xs text-gray-500 mt-1">
+//               <span>Preparing: {preparingOrders}</span>
+//               <span>Pending: {pendingOrders}</span>
+//             </div>
+//             <p className="text-xs text-gray-500 mt-1">{completedToday.length} completed today</p>
+//           </div>
+//         </div>
+
+//         {/* Today's Revenue */}
+//         <div className="bg-white rounded-lg shadow p-4">
+//           <div className="flex items-center justify-between pb-2 border-b border-gray-200">
+//             <h3 className="text-sm font-medium text-gray-700">Today's Revenue</h3>
+           
+//           </div>
+//           <div className="mt-4">
+//             <p className="text-2xl font-bold text-gray-900">₹{todayRevenue.toFixed(2)}</p>
+//             <div className="text-xs text-gray-500 space-y-1">
+//               <p>From {totalOrdersToday} orders today</p>
+//               <p>{completedToday.length} completed • {activeOrders.length} active</p>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Average Order */}
+//         <div className="bg-white rounded-lg shadow p-4">
+//           <div className="flex items-center justify-between pb-2 border-b border-gray-200">
+//             <h3 className="text-sm font-medium text-gray-700">Average Order</h3>
+//             <TrendingUp className="h-5 w-5 text-gray-400" />
+//           </div>
+//           <div className="mt-4">
+//             <p className="text-2xl font-bold text-gray-900">₹{Math.round(averageOrderValue)}</p>
+//             <p className="text-xs text-gray-500">Based on {totalOrdersToday} total orders</p>
+//           </div>
+//         </div>
+
+//         {/* Rating */}
+//         <div className="bg-white rounded-lg shadow p-4">
+//           <div className="flex items-center justify-between pb-2 border-b border-gray-200">
+//             <h3 className="text-sm font-medium text-gray-700">Rating</h3>
+//             <Star className="h-5 w-5 text-gray-400" />
+//           </div>
+//           <div className="mt-4">
+//             <p className="text-2xl font-bold text-gray-900">{restaurantInfo.rating}</p>
+//             <p className="text-xs text-gray-500">{restaurantInfo.totalOrders} total orders</p>
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* Recent Orders and Restaurant Overview */}
+//       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+//         {/* Recent Orders */}
+//         <div className="bg-white rounded-lg shadow p-4">
+//           <header className="pb-3 border-b border-gray-200">
+//             <h3 className="text-lg font-semibold text-gray-900">Recent Orders</h3>
+//           </header>
+//           <div className="mt-4 space-y-4">
+//             {activeOrders.slice(0, 3).map(order => (
+//               <div
+//                 key={order._id}
+//                 className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+//               >
+//                 <div>
+//                   <p className="font-medium text-gray-900">{order.customerName}</p>
+//                   <p className="text-sm text-gray-600">#{order._id}</p>
+//                 </div>
+//                 <div className="text-right">
+//                   <p className="font-semibold text-gray-900">₹{order.totalAmount}</p>
+//                   <span
+//                     className={`text-xs px-2 py-1 rounded-full ${
+//                       order.status === 'pending'
+//                         ? 'bg-yellow-100 text-yellow-800'
+//                         : order.status === 'preparing'
+//                         ? 'bg-blue-100 text-blue-800'
+//                         : 'bg-green-100 text-green-800'
+//                     }`}
+//                   >
+//                     {order.status}
+//                   </span>
+//                 </div>
+//               </div>
+//             ))}
+//           </div>
+//         </div>
+
+//         {/* Restaurant Overview */}
+//         <div className="bg-white rounded-lg shadow p-4">
+//           <header className="pb-3 border-b border-gray-200">
+//             <h3 className="text-lg font-semibold text-gray-900">Restaurant Overview</h3>
+//           </header>
+//           <div className="mt-4 space-y-4 text-sm text-gray-700">
+//             <div>
+//               <h4 className="font-semibold">{restaurantInfo.name}</h4>
+//               <p className="text-gray-600">{restaurantInfo.description}</p>
+//             </div>
+//             <div className="grid grid-cols-2 gap-4">
+//               <div>
+//                 <span className="text-gray-600">Cuisine:</span>
+//                 <p className="font-medium">{restaurantInfo.cuisine.join(', ')}</p>
+//               </div>
+//               <div>
+//                 <span className="text-gray-600">Total Orders:</span>
+//                 <p className="font-medium">{restaurantInfo.totalOrders}</p>
+//               </div>
+//               <div>
+//                 <span className="text-gray-600">Today's Revenue:</span>
+//                 <p className="font-medium">₹{restaurantInfo.todayRevenue.toFixed(2)}</p>
+//               </div>
+//               <div>
+//                 <span className="text-gray-600">Rating:</span>
+//                 <p className="font-medium">{restaurantInfo.rating}/5</p>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       </section>
+//     </div>
+//   );
+// };
+
+// export default Home;
+
+
+
+
+
+
+import RestaurantDashboard from '../chart/RestaurantDashboard'
 
 const Home = () => {
-  const { activeOrders, orderHistory, restaurantInfo } = useAppSelector((state) => state.orders);
-
-  // Helper function to check if date is today
-  const isToday = (dateString: string) => {
-    const date = new Date(dateString);
-    const today = new Date();
-    return (
-      date.getDate() === today.getDate() &&
-      date.getMonth() === today.getMonth() &&
-      date.getFullYear() === today.getFullYear()
-    );
-  };
-
-  // Calculate metrics
-  const completedToday = orderHistory.filter(order => isToday(order.orderTime));
-  const preparingOrders = activeOrders.filter(order => order.status === 'preparing').length;
-  const pendingOrders = activeOrders.filter(order => order.status === 'pending').length;
-  
-  // Calculate revenue from both active and completed orders today
-  const activeTodayRevenue = activeOrders.reduce((sum, order) => sum + order.totalAmount, 0);
-  const completedTodayRevenue = completedToday.reduce((sum, order) => sum + order.totalAmount, 0);
-  const todayRevenue = activeTodayRevenue + completedTodayRevenue;
-  
-  // Calculate average order value
-  const totalOrdersToday = activeOrders.length + completedToday.length;
-  const averageOrderValue = totalOrdersToday > 0 
-    ? todayRevenue / totalOrdersToday 
-    : 0;
   return (
-    <div className="p-6 space-y-6">
-      <section className="bg-gradient-to-r from-red-500 to-orange-500 rounded-lg p-6 text-white">
-        <h1 className="text-3xl font-bold mb-2">Welcome back!</h1>
-        <p className="text-red-100">Here's what's happening at {restaurantInfo.name} today</p>
-      </section>
-
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Active Orders */}
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex items-center justify-between pb-2 border-b border-gray-200">
-            <h3 className="text-sm font-medium text-gray-700">Active Orders</h3>
-            <Clock className="h-5 w-5 text-gray-400" />
-          </div>
-          <div className="mt-4">
-            <p className="text-2xl font-bold text-gray-900">{activeOrders.length}</p>
-            <div className="flex justify-between text-xs text-gray-500 mt-1">
-              <span>Preparing: {preparingOrders}</span>
-              <span>Pending: {pendingOrders}</span>
-            </div>
-            <p className="text-xs text-gray-500 mt-1">{completedToday.length} completed today</p>
-          </div>
-        </div>
-
-        {/* Today's Revenue */}
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex items-center justify-between pb-2 border-b border-gray-200">
-            <h3 className="text-sm font-medium text-gray-700">Today's Revenue</h3>
-           
-          </div>
-          <div className="mt-4">
-            <p className="text-2xl font-bold text-gray-900">₹{todayRevenue.toFixed(2)}</p>
-            <div className="text-xs text-gray-500 space-y-1">
-              <p>From {totalOrdersToday} orders today</p>
-              <p>{completedToday.length} completed • {activeOrders.length} active</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Average Order */}
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex items-center justify-between pb-2 border-b border-gray-200">
-            <h3 className="text-sm font-medium text-gray-700">Average Order</h3>
-            <TrendingUp className="h-5 w-5 text-gray-400" />
-          </div>
-          <div className="mt-4">
-            <p className="text-2xl font-bold text-gray-900">₹{Math.round(averageOrderValue)}</p>
-            <p className="text-xs text-gray-500">Based on {totalOrdersToday} total orders</p>
-          </div>
-        </div>
-
-        {/* Rating */}
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex items-center justify-between pb-2 border-b border-gray-200">
-            <h3 className="text-sm font-medium text-gray-700">Rating</h3>
-            <Star className="h-5 w-5 text-gray-400" />
-          </div>
-          <div className="mt-4">
-            <p className="text-2xl font-bold text-gray-900">{restaurantInfo.rating}</p>
-            <p className="text-xs text-gray-500">{restaurantInfo.totalOrders} total orders</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Recent Orders and Restaurant Overview */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Orders */}
-        <div className="bg-white rounded-lg shadow p-4">
-          <header className="pb-3 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Recent Orders</h3>
-          </header>
-          <div className="mt-4 space-y-4">
-            {activeOrders.slice(0, 3).map(order => (
-              <div
-                key={order._id}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-              >
-                <div>
-                  <p className="font-medium text-gray-900">{order.customerName}</p>
-                  <p className="text-sm text-gray-600">#{order._id}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold text-gray-900">₹{order.totalAmount}</p>
-                  <span
-                    className={`text-xs px-2 py-1 rounded-full ${
-                      order.status === 'pending'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : order.status === 'preparing'
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-green-100 text-green-800'
-                    }`}
-                  >
-                    {order.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Restaurant Overview */}
-        <div className="bg-white rounded-lg shadow p-4">
-          <header className="pb-3 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Restaurant Overview</h3>
-          </header>
-          <div className="mt-4 space-y-4 text-sm text-gray-700">
-            <div>
-              <h4 className="font-semibold">{restaurantInfo.name}</h4>
-              <p className="text-gray-600">{restaurantInfo.description}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <span className="text-gray-600">Cuisine:</span>
-                <p className="font-medium">{restaurantInfo.cuisine.join(', ')}</p>
-              </div>
-              <div>
-                <span className="text-gray-600">Total Orders:</span>
-                <p className="font-medium">{restaurantInfo.totalOrders}</p>
-              </div>
-              <div>
-                <span className="text-gray-600">Today's Revenue:</span>
-                <p className="font-medium">₹{restaurantInfo.todayRevenue.toFixed(2)}</p>
-              </div>
-              <div>
-                <span className="text-gray-600">Rating:</span>
-                <p className="font-medium">{restaurantInfo.rating}/5</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+    <div>
+      <RestaurantDashboard/>
     </div>
-  );
-};
+  )
+}
 
-export default Home;
+export default Home
