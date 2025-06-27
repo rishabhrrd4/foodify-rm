@@ -6,10 +6,7 @@ import {
   updateOrderStatus,
 } from "../../../../store/slices/orderSlice";
 import { FaTimes, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
-<<<<<<< HEAD
 // import { Socket } from "socket.io-client";
-=======
->>>>>>> feature/final
 import { websocketService } from "../../../../services/websocket";
 
 const OrderNotification = () => {
@@ -29,19 +26,12 @@ const OrderNotification = () => {
 
   useEffect(() => {
     if (notifications.length > 0) {
-<<<<<<< HEAD
       const newNotification = notifications[notifications.length - 1];
       // Only add to visibleNotifications if it's a new, unique notification
       if (!visibleNotifications.includes(newNotification._id)) {
         setVisibleNotifications((prev) => [...prev, newNotification._id]);
         // Set a timeout for auto-dismissal after 10 seconds
         setTimeout(() => handleDismiss(newNotification._id), 10000);
-=======
-      const latest = notifications[notifications.length - 1];
-      if (!visibleNotifications.includes(latest.id)) {
-        setVisibleNotifications((prev) => [...prev, latest.id]);
-        setTimeout(() => handleDismiss(latest.id), 10000); // Auto-dismiss after 10s
->>>>>>> feature/final
       }
     }
   }, [notifications, visibleNotifications, handleDismiss]);
