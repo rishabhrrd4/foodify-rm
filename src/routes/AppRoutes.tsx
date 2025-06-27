@@ -11,7 +11,6 @@ import ReferralForm from "../features/restrauntManager/InfoPage/ReferralForm";
 
 import Login from "../features/auth/pages/Login";
 import Register from "../features/auth/pages/Register";
-// import HomePage from "../features/auth/pages/HomePage";
 import ErrorPage from "../features/auth/components/ErrorPage";
 
 import PlaceOrderPage from "../features/customer/orderPlacement/PlaceOrderPage";
@@ -24,7 +23,6 @@ import Dashboard from "../features/admin/dashboard/Dashboard";
 import Home from "../features/restaurants/pages/Home";
 import Menu from "../features/restaurants/pages/Menu";
 import Orders from "../features/restaurants/pages/Orders";
-// import OrderHistory from "../features/restaurants/pages/OrderHistory";
 
 
 import  RestaurantInfo from "../features/restaurants/pages/RestaurantInfo";
@@ -119,7 +117,6 @@ const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: "menu", element: <Menu /> },
       { path: "orders", element: <Orders /> },
-      // { path: "order-history", element: <OrderHistory /> },
      
        { path: "restaurant-info", element: <RestaurantInfo /> },
 
