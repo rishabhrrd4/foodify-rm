@@ -1,42 +1,20 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
+// Order item type
 export interface OrderItem {
-  id: string;
   name: string;
   quantity: number;
   price: number;
   specialInstructions?: string;
 }
 
-// export interface Order {
-//   id: string;
-//   customerName: string;
-//   customerPhone: string;
-//   items: OrderItem[];
-//   totalAmount: number;
-//   status:
-//     | "pending"
-//     | "accepted"
-//     | "preparing"
-//     | "ready"
-//     | "delivered"
-//     | "rejected";
-//   orderTime: string;
-//   estimatedDeliveryTime?: string;
-//   deliveryAddress: string;
-//   paymentMethod: string;
-// }
-
+// Unified Order type using `id` instead of `_id`
 export type Order = {
-  _id: string;
+  id: string; // normalized from _id when needed
   userId: string;
   restaurantId: string;
-  items: {
-    name: string;
-    quantity: number;
-    price: number;
-  }[];
+  items: OrderItem[];
   itemTotal: number;
   tax: number;
   platformFee: number;
@@ -49,6 +27,7 @@ export type Order = {
   couponId: string | null;
 };
 
+// State shape
 interface OrderState {
   activeOrders: Order[];
   orderHistory: Order[];
@@ -56,51 +35,15 @@ interface OrderState {
   isLoading: boolean;
 }
 
+// Initial state
 const initialState: OrderState = {
-  activeOrders: [
-    {
-      id: "ORD001",
-      customerName: "Amit Sharma",
-      customerPhone: "+91 9876543210",
-      items: [
-        { id: "1", name: "Butter Chicken", quantity: 2, price: 349 },
-        { id: "3", name: "Dal Makhani", quantity: 1, price: 249 },
-      ],
-      totalAmount: 947,
-      status: "pending",
-      orderTime: new Date().toISOString(),
-      deliveryAddress: "123 Vikas Marg, Delhi",
-      paymentMethod: "Online",
-    },
-    {
-      id: "ORD002",
-      customerName: "Priya Verma",
-      customerPhone: "+91 9876543211",
-      items: [{ id: "2", name: "Paneer Tikka", quantity: 1, price: 299 }],
-      totalAmount: 299,
-      status: "preparing",
-      orderTime: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
-      deliveryAddress: "456 Connaught Place, Delhi",
-      paymentMethod: "Cash on Delivery",
-    },
-  ],
-  orderHistory: [
-    {
-      id: "ORD003",
-      customerName: "Rahul Singh",
-      customerPhone: "+91 9876543212",
-      items: [{ id: "4", name: "Gulab Jamun", quantity: 1, price: 99 }],
-      totalAmount: 99,
-      status: "delivered",
-      orderTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      deliveryAddress: "789 Lajpat Nagar, Delhi",
-      paymentMethod: "Online",
-    },
-  ],
+  activeOrders: [],
+  orderHistory: [],
   notifications: [],
   isLoading: false,
 };
 
+// Create slice
 const orderSlice = createSlice({
   name: "orders",
   initialState,
@@ -111,13 +54,16 @@ const orderSlice = createSlice({
     },
     updateOrderStatus: (
       state,
-      action: PayloadAction<{ id: string; status: Order["status"] }>
+      action: PayloadAction<{ id: string; status: "pending" | "accepted" | "preparing" | "ready" | "delivered" | "rejected" }>
     ) => {
       const order = state.activeOrders.find(
         (order) => order.id === action.payload.id
       );
       if (order) {
+        // @ts-ignore - attach status dynamically if needed
         order.status = action.payload.status;
+
+        // Move to history if final state
         if (
           action.payload.status === "delivered" ||
           action.payload.status === "rejected"

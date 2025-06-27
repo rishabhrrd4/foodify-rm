@@ -22,6 +22,8 @@ export default function ManagerLoginPage() {
     }));
   };
 
+  const rId = localStorage.getItem("restaurantId");
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -45,7 +47,13 @@ export default function ManagerLoginPage() {
             localStorage.setItem("userLatitude", latitude.toString());
             localStorage.setItem("userLongitude", longitude.toString());
 
-            navigate("/restaurant-manager/info");
+            if (rId === "") {
+              navigate("/restaurant");
+            } else {
+              navigate("/restaurant-manager/info");
+            }
+
+            // navigate("/restaurant-manager/info");
           },
           (geoError) => {
             console.warn("Geolocation error:", geoError.message);
