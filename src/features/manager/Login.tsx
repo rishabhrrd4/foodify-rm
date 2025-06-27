@@ -4,7 +4,7 @@ import { loginManager } from "../manager/auth/managerAuthService";
 
 export default function ManagerLoginPage() {
   const [formData, setFormData] = useState({
-    email: "",git 
+    email: "",
     password: "",
     rememberMe: false,
   });
