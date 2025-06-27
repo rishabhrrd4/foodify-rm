@@ -29,6 +29,7 @@ import ResetPasswordPage from "../features/manager/ResetPassword";
 import CreateRestaurantPage from "../features/manager/CreateRestaurantPage";
 
 import ProtectedRoute from "../routes/ProtectedRoute"; // Adjust the path as necessary
+import ManagerProfile from "../features/restaurants/pages/ManagerProfile";
 
 const router = createBrowserRouter([
   {
@@ -113,9 +114,11 @@ const router = createBrowserRouter([
           { index: true, element: <Home /> },
           { path: "menu", element: <Menu /> },
           { path: "orders", element: <Orders /> },
-          { path: "order-history", element: <OrderHistory /> },
+          { path: "restaurant-info", element: <RestaurantInfo /> },
+          // { path: "order-history", element: <OrderHistory /> },
           { path: "restaurant-info", element: <RestaurantInfo /> },
           { path: "notifications", element: <Notifications /> },
+          { path: "manager-info", element: <ManagerProfile /> },
         ],
       },
     ],

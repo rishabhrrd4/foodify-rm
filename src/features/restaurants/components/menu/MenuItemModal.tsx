@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { FaTimes, FaPlus, FaTrash } from 'react-icons/fa';
 import { addMenuItem, updateMenuItem, type MenuItem } from '../../../../api/api';
+import ImageUploader from './ImageUploader';
+
+const placeholderImg = 'https://thumbs.dreamstime.com/b/logo-fresh-food-farm-vector-illustration-white-background-140863729.jpg';
 
 interface MenuItemModalProps {
   isOpen: boolean;
@@ -14,13 +17,19 @@ const MenuItemModal = ({ isOpen, onClose, editingItem, onItemAdded }: MenuItemMo
     name: '',
     description: '',
     price: 0,
-    imageUrl: '/placeholder.svg',
+    imageUrl: placeholderImg,
     tags: [] as string[],
   });
 
   const [newTag, setNewTag] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState({
+    name: '',
+    description: '',
+    price: '',
+  });
+  const [imageUploadError, setImageUploadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (editingItem) {
@@ -28,7 +37,7 @@ const MenuItemModal = ({ isOpen, onClose, editingItem, onItemAdded }: MenuItemMo
         name: editingItem.name || '',
         description: editingItem.description || '',
         price: editingItem.price || 0,
-        imageUrl: editingItem.imageUrl || '/placeholder.svg',
+        imageUrl: editingItem.imageUrl || placeholderImg,
         tags: editingItem.tags || [],
       });
     } else {
@@ -36,16 +45,56 @@ const MenuItemModal = ({ isOpen, onClose, editingItem, onItemAdded }: MenuItemMo
         name: '',
         description: '',
         price: 0,
-        imageUrl: '/placeholder.svg',
-        tags: [],
+        imageUrl: placeholderImg,
+        tags: ["Veg"],
       });
     }
     setError(null);
     setNewTag('');
+    setValidationErrors({
+      name: '',
+      description: '',
+      price: '',
+    });
+    setImageUploadError(null);
   }, [editingItem, isOpen]);
+
+  const validateForm = () => {
+    const errors = {
+      name: '',
+      description: '',
+      price: '',
+    };
+
+    let isValid = true;
+
+    if (formData.name.length < 2 || formData.name.length > 30) {
+      errors.name = 'Name must be between 2 and 30 characters';
+      isValid = false;
+    }
+
+    if (formData.description.length > 0 && 
+        (formData.description.length < 10 || formData.description.length > 250)) {
+      errors.description = 'Description must be between 10 and 150 characters';
+      isValid = false;
+    }
+
+    if (formData.price <= 0) {
+      errors.price = 'Price must be greater than 0';
+      isValid = false;
+    }
+
+    setValidationErrors(errors);
+    return isValid;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
 
@@ -71,6 +120,13 @@ const MenuItemModal = ({ isOpen, onClose, editingItem, onItemAdded }: MenuItemMo
       ...prev, 
       [name]: name === 'price' ? Number(value) : value 
     }));
+
+    if (validationErrors[name as keyof typeof validationErrors]) {
+      setValidationErrors(prev => ({
+        ...prev,
+        [name]: '',
+      }));
+    }
   };
 
   const addTag = () => {
@@ -135,10 +191,13 @@ const MenuItemModal = ({ isOpen, onClose, editingItem, onItemAdded }: MenuItemMo
               type="text"
               value={formData.name}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className={`w-full px-3 py-2 border ${validationErrors.name ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500`}
               required
               disabled={isSubmitting}
             />
+            {validationErrors.name && (
+              <p className="mt-1 text-sm text-red-600">{validationErrors.name}</p>
+            )}
           </div>
 
           <div>
@@ -151,9 +210,12 @@ const MenuItemModal = ({ isOpen, onClose, editingItem, onItemAdded }: MenuItemMo
               rows={3}
               value={formData.description}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className={`w-full px-3 py-2 border ${validationErrors.description ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500`}
               disabled={isSubmitting}
             />
+            {validationErrors.description && (
+              <p className="mt-1 text-sm text-red-600">{validationErrors.description}</p>
+            )}
           </div>
 
           <div>
@@ -168,27 +230,31 @@ const MenuItemModal = ({ isOpen, onClose, editingItem, onItemAdded }: MenuItemMo
               step="0.01"
               value={formData.price}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className={`w-full px-3 py-2 border ${validationErrors.price ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500`}
               required
               disabled={isSubmitting}
             />
+            {validationErrors.price && (
+              <p className="mt-1 text-sm text-red-600">{validationErrors.price}</p>
+            )}
           </div>
 
-          <div>
-            <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-1">
-              Image URL
-            </label>
-            <input
-              id="imageUrl"
-              name="imageUrl"
-              type="text"
-              value={formData.imageUrl}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-              placeholder="/placeholder.svg"
-              disabled={isSubmitting}
-            />
-          </div>
+          <ImageUploader
+            imageUrl={formData.imageUrl}
+            onImageChange={(url) => setFormData(prev => ({ ...prev, imageUrl: url }))}
+            onError={setImageUploadError}
+            placeholderImg={placeholderImg}
+            disabled={isSubmitting}
+          />
+
+          {imageUploadError && (
+            <p className="text-sm text-red-600 flex items-center">
+              <svg className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              {imageUploadError}
+            </p>
+          )}
 
           <div>
             <label htmlFor="newTag" className="block text-sm font-medium text-gray-700 mb-2">
