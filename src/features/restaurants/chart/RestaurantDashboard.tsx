@@ -132,7 +132,7 @@ const RestaurantDashboard = () => {
         <div className="lg:col-span-2 space-y-4">
           <RevenueChart
             data={currentData}
-            title="Revenue & Orders Trend{getFilterTitle}"
+            title="Revenue & Orders Trend"
             timeFilter={timeFilter}
             onFilterChange={setTimeFilter}
           />

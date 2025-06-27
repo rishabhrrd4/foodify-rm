@@ -19,7 +19,7 @@ const RevenueChart: React.FC<RevenueChartProps> = ({
 }) => {
   const chartOptions: ApexOptions = {
     chart: {
-      type: 'line',
+      type: 'area',
       height: 350,
       toolbar: {
         show: false
@@ -103,12 +103,12 @@ const RevenueChart: React.FC<RevenueChartProps> = ({
   const series = [
     {
       name: 'Revenue',
-      type: 'line',
+      type: 'area',
       data: data.map(item => item.revenue)
     },
     {
       name: 'Orders',
-      type: 'line',
+      type: 'area',
       data: data.map(item => item.orders),
       yAxisIndex: 1
     }
@@ -128,7 +128,7 @@ const RevenueChart: React.FC<RevenueChartProps> = ({
       <Chart
         options={chartOptions}
         series={series}
-        type="line"
+        type="area"
         height={350}
       />
     </div>
