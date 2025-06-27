@@ -57,7 +57,6 @@ const router = createBrowserRouter([
   {
     path: "/restaurant-manager",
     children: [
-<<<<<<< HEAD
       { index: true, element: <Home /> },
       { path: "menu", element: <Menu /> },
       { path: "orders", element: <Orders /> },
@@ -65,7 +64,6 @@ const router = createBrowserRouter([
       { path: "feedback-history", element: <FeedbackHistory /> },
       { path: "restaurant-info", element: <RestaurantInfo /> },
       { path: "notifications", element: <Notifications /> },
-=======
       { index: true, element: <RestaurantManagerLanding /> },
       // { path: "register", element: <RestaurantRegistration /> },
       { path: "info", element: <RestaurantForm /> },
@@ -86,7 +84,6 @@ const router = createBrowserRouter([
           { path: "orders", element: <OrderManagmentPage /> },
         ],
       },
->>>>>>> 761f49dc09c9839c6b1c31b4289b259d80f664d3
     ],
   },
 
