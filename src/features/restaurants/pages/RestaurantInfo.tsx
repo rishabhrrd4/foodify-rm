@@ -131,13 +131,13 @@ const ManagerProfile: React.FC = () => {
         <p className="text-center text-red-500 mb-4">{logoutError}</p>
       )}
 
-      <button
+      {/* <button
         onClick={handleLogout}
         disabled={logoutLoading}
         className="w-full bg-orange-500 text-white font-semibold py-2 rounded hover:bg-orange-600 disabled:opacity-50"
       >
-        {logoutLoading ? "Logging out..." : "Logout"}
-      </button>
+        {logoutLoading ? 'Logging out...' : 'Logout'}
+      </button> */}
     </div>
   );
 };
