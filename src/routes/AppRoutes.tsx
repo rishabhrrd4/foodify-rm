@@ -1,3 +1,4 @@
+// src/routes/AppRoutes.tsx
 import { createBrowserRouter, RouterProvider, Outlet, Navigate } from "react-router-dom";
 
 import AppLayout from "../layouts/AppLayout";
@@ -22,12 +23,14 @@ import FeedbackHistory from "../features/restaurants/pages/FeedbackHistory"
 import RestaurantInfo from "../features/restaurants/pages/RestaurantInfo";
 import Notifications from "../features/restaurants/pages/Notifications";
 
+// Manager login/signup pages
 import ManagerLoginPage from "../features/manager/Login";
 import ManagerSignupPage from "../features/manager/Register";
 import ForgotPassword from "../features/manager/ForgotPassword";
 import ResetPasswordPage from "../features/manager/ResetPassword";
 import CreateRestaurantPage from "../features/manager/CreateRestaurantPage";
 
+// Import the ProtectedRoute component
 import ProtectedRoute from "../routes/ProtectedRoute"; // Adjust the path as necessary
 
 const router = createBrowserRouter([
@@ -57,50 +60,52 @@ const router = createBrowserRouter([
   {
     path: "/restaurant-manager",
     children: [
-<<<<<<< HEAD
-      { index: true, element: <Home /> },
-      { path: "menu", element: <Menu /> },
-      { path: "orders", element: <Orders /> },
-      { path: "order-history", element: <OrderHistory /> },
-      { path: "feedback-history", element: <FeedbackHistory /> },
-      { path: "restaurant-info", element: <RestaurantInfo /> },
-      { path: "notifications", element: <Notifications /> },
-=======
       { index: true, element: <RestaurantManagerLanding /> },
       // { path: "register", element: <RestaurantRegistration /> },
       { path: "info", element: <RestaurantForm /> },
       { path: "refer-form", element: <ReferralForm /> },
+      
+      { index: true, element: <Home /> },
+      { path: "menu", element: <Menu /> },
+      { path: "orders", element: <Orders /> },
+      { path: "order-history", element: <OrderHistory /> },
+      { path: "restaurant-info", element: <RestaurantInfo /> },
+      { path: "notifications", element: <Notifications /> },
+
+
     ]
   },
 
 
   // PROTECTED ROUTES BELOW THIS POINT
+  // Admin Protected Routes
   {
     path: "/admin",
-    element: <ProtectedRoute />,
+    element: <ProtectedRoute />, // Protects all children of /admin
     children: [
       {
-        element: <AdminLayout />, 
+        element: <AdminLayout />, // AdminLayout is rendered if authenticated
         children: [
           { index: true, element: <Dashboard /> },
           { path: "orders", element: <OrderManagmentPage /> },
         ],
       },
->>>>>>> 761f49dc09c9839c6b1c31b4289b259d80f664d3
     ],
   },
 
+  // Protected Restaurant Manager specific routes (after initial setup/login)
   {
     path: "/create-restaurant",
-    element: <ProtectedRoute />, 
+    element: <ProtectedRoute />, // Protects the create restaurant page
     children: [
       { index: true, element: <CreateRestaurantPage /> },
     ]
   },
 
+  // Protected Restaurant (customer/staff) related routes
   {
     path: "/restaurant",
-    element: <ProtectedRoute />,
+    element: <ProtectedRoute />, // Protects all children of /restaurant
     children: [
       {
         element: (
@@ -114,6 +119,8 @@ const router = createBrowserRouter([
           { path: "orders", element: <Orders /> },
           { path: "order-history", element: <OrderHistory /> },
           { path: "restaurant-info", element: <RestaurantInfo /> },
+                { path: "feedback-history", element: <FeedbackHistory /> },
+
           { path: "notifications", element: <Notifications /> },
         ],
       },
