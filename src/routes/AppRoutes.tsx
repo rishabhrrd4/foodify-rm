@@ -54,21 +54,25 @@ const router = createBrowserRouter([
   },
 
   // Public Restaurant Manager flow paths (initial setup, accessible without prior login)
+  // {
+  //   path: "/restaurant-manager",
+  //   children: [
+  //     { index: true, element: <Home /> },
+  //     { path: "menu", element: <Menu /> },
+  //     { path: "orders", element: <Orders /> },
+  //     { path: "order-history", element: <OrderHistory /> },
+  //     { path: "feedback-history", element: <FeedbackHistory /> },
+  //     { path: "restaurant-info", element: <RestaurantInfo /> },
+  //     { path: "notifications", element: <Notifications /> },
+  //     { index: true, element: <RestaurantManagerLanding /> },
+  //     // { path: "register", element: <RestaurantRegistration /> },
+  //     { path: "info", element: <RestaurantForm /> },
+  //     { path: "refer-form", element: <ReferralForm /> },
+  //   ]
+  // },
   {
     path: "/restaurant-manager",
-    children: [
-      { index: true, element: <Home /> },
-      { path: "menu", element: <Menu /> },
-      { path: "orders", element: <Orders /> },
-      { path: "order-history", element: <OrderHistory /> },
-      { path: "feedback-history", element: <FeedbackHistory /> },
-      { path: "restaurant-info", element: <RestaurantInfo /> },
-      { path: "notifications", element: <Notifications /> },
-      { index: true, element: <RestaurantManagerLanding /> },
-      // { path: "register", element: <RestaurantRegistration /> },
-      { path: "info", element: <RestaurantForm /> },
-      { path: "refer-form", element: <ReferralForm /> },
-    ]
+    element: <RestaurantManagerLanding />,
   },
 
 
