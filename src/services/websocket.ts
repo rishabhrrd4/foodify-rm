@@ -59,7 +59,6 @@ const createMockWebSocketService = () => {
 
   return {
     connect: (restaurantId: string) => {
-
       socket = io("http://localhost:3005", {
         extraHeaders: {
           Authorization: `Bearer ${token}`,
@@ -67,40 +66,46 @@ const createMockWebSocketService = () => {
       });
 
       socket.on("connection", () => {
-        console.log("Mock WebSocket connected");
+        console.log("WebSocket connected");
       });
 
-      socket.on("newOrder", data => {
+      socket.on("newOrder", (data) => {
         console.log(data);
-          store.dispatch(addOrder(data));
+        store.dispatch(addOrder(data));
       });
 
-      
       // har 15-30 sec me ek order generate karega
       //   intervalId = window.setInterval(() => {
-        //     const mockOrder = generateMockOrder();
-        //   }, Math.random() * 15000 + 15000);
-        
-        //   // pehla order generate karega turant
-        //   setTimeout(() => {
-          //     const mockOrder = generateMockOrder();
-          //     store.dispatch(addOrder(mockOrder));
-          //   }, 2000);
-          // },
-          
-          // disconnect: () => {
-            //   if (intervalId) {
-              //     window.clearInterval(intervalId);
-              //     intervalId = null;
-              //   }
-              //   console.log("Mock WebSocket disconnected");
-            },
-            handleOrderResponse: (orderId) => {
-              console.log("Hii orderResponse");
-              if (socket) {
-                socket.emit("orderResponse", { approved: true, orderId });
-              }
-            }
+      //     const mockOrder = generateMockOrder();
+      //   }, Math.random() * 15000 + 15000);
+
+      //   // pehla order generate karega turant
+      //   setTimeout(() => {
+      //     const mockOrder = generateMockOrder();
+      //     store.dispatch(addOrder(mockOrder));
+      //   }, 2000);
+      // },
+
+      // disconnect: () => {
+      //   if (intervalId) {
+      //     window.clearInterval(intervalId);
+      //     intervalId = null;
+      //   }
+      //   console.log("Mock WebSocket disconnected");
+    },
+    handleOrderAccept: (orderId) => {
+      console.log("Hii orderResponse Accept");
+      if (socket) {
+        socket.emit("orderResponse", { approved: true, orderId });
+      }
+    },
+
+    handleOrderReject: (orderId) => {
+      console.log("Hii orderResponse Reject");
+      if(socket){
+        socket.emit("orderResponse", { approved: false, orderId });
+      }
+    }
   };
 };
 

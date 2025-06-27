@@ -18,6 +18,7 @@ interface FormData {
   landmark: string;
   cuisineTypes: string[];
   restaurantType: string;
+  
   operatingHours: {
     [key: string]: { open: string; close: string; closed: boolean };
   };
