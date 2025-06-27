@@ -24,27 +24,15 @@ export interface OperatingHours {
 
 export interface FormData {
   restaurantName: string;
-  ownerName: string;
-  email: string;
+  description: string;
   phone: string;
-  whatsappUpdates: boolean;
-  primaryContactSame: boolean;
-  primaryPhone: string;
   shopNumber: string;
   floor: string;
   area: string;
   city: string;
   landmark: string;
   cuisineTypes: string[];
-  restaurantType: string;
-  operatingHours: {
-    [key: string]: OperatingHours;
-  };
-  bankAccount: string;
-  ifscCode: string;
-  accountHolder: string;
-  gstNumber: string;
-}
+};
 
 export interface UploadedFiles {
   fssaiLicense: File | null;

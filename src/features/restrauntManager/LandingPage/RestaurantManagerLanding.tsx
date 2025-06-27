@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "./Navbar";
 import Hero from "./Hero";
-import QuickStart from "./QuickStart";
 import Benefits from "./Benefits";
 import SuccessStories from "./SuccessStories";
 import FAQ from "./FAQ";
@@ -23,7 +22,7 @@ const RestaurantManagerLanding: React.FC = () => {
     <div className="min-h-screen">
       <Navbar isScrolled={isScrolled} />
       <Hero />
-      <QuickStart />
+      {/* <QuickStart /> */}
       <Benefits />
       <SuccessStories />
       <FAQ />

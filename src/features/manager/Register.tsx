@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import axios from "axios";
+import { signupManager } from "../manager/auth/managerAuthService";
+import { useNavigate } from "react-router";
 
 export default function ManagerSignupPage() {
   const [formData, setFormData] = useState({
@@ -14,6 +15,7 @@ export default function ManagerSignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -26,21 +28,26 @@ export default function ManagerSignupPage() {
     setSuccess(false);
 
     try {
-      const response = await axios.post(
-        "http://localhost:3005/manager/signup",
-        formData
+      await signupManager(
+        formData.name,
+        formData.email,
+        formData.password,
+        formData.accountNumber,
+        formData.ifscCode,
+        formData.bankName
       );
-      if (response.status === 200 || response.status === 201) {
-        setSuccess(true);
-        setFormData({
-          name: "",
-          email: "",
-          password: "",
-          accountNumber: "",
-          ifscCode: "",
-          bankName: "",
-        });
-      }
+
+      setSuccess(true);
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+        accountNumber: "",
+        ifscCode: "",
+        bankName: "",
+      });
+
+      navigate("/manager/login");
     } catch (err: any) {
       setError(err.response?.data?.message || "Signup failed");
     } finally {

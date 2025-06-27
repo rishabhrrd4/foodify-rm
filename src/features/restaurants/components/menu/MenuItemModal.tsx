@@ -1,87 +1,93 @@
 import { useState, useEffect } from 'react';
 import { FaTimes, FaPlus, FaTrash } from 'react-icons/fa';
-import { useAppDispatch, useAppSelector } from '../../hooks/useAppSelector';
-import { addMenuItem, updateMenuItem } from '../../../../store/slices/menuSlice';
-import type { MenuItem } from '../../../../store/slices/menuSlice';
+import { addMenuItem, updateMenuItem, type MenuItem } from '../../../../api/api';
 
 interface MenuItemModalProps {
   isOpen: boolean;
   onClose: () => void;
   editingItem?: MenuItem | null;
+  onItemAdded: (item: MenuItem) => void;
 }
 
-const MenuItemModal = ({ isOpen, onClose, editingItem }: MenuItemModalProps) => {
-  const dispatch = useAppDispatch();
-  const categories = useAppSelector(state => state.menu.categories);
-
+const MenuItemModal = ({ isOpen, onClose, editingItem, onItemAdded }: MenuItemModalProps) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: 0,
-    category: '',
-    image: '/placeholder.svg',
-    isVeg: true,
-    isAvailable: true,
-    preparationTime: 10,
-    variants: [] as Array<{ name: string; price: number; id: string }>,
+    imageUrl: '/placeholder.svg',
+    tags: [] as string[],
   });
 
-  const [newVariant, setNewVariant] = useState({ name: '', price: 0 });
+  const [newTag, setNewTag] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (editingItem) {
       setFormData({ 
-        ...editingItem,
-        variants: editingItem.variants || [] 
+        name: editingItem.name || '',
+        description: editingItem.description || '',
+        price: editingItem.price || 0,
+        imageUrl: editingItem.imageUrl || '/placeholder.svg',
+        tags: editingItem.tags || [],
       });
     } else {
       setFormData({
         name: '',
         description: '',
         price: 0,
-        category: '',
-        image: '/placeholder.svg',
-        isVeg: true,
-        isAvailable: true,
-        preparationTime: 10,
-        variants: [],
+        imageUrl: '/placeholder.svg',
+        tags: [],
       });
     }
+    setError(null);
+    setNewTag('');
   }, [editingItem, isOpen]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const menuItem: MenuItem = {
-      id: editingItem?.id || Date.now().toString(),
-      ...formData,
-    };
+    setIsSubmitting(true);
+    setError(null);
 
-    editingItem ? dispatch(updateMenuItem(menuItem)) : dispatch(addMenuItem(menuItem));
-    onClose();
-  };
-
-  const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const addVariant = () => {
-    if (newVariant.name && newVariant.price > 0) {
-      setFormData({
-        ...formData,
-        variants: [
-          ...formData.variants,
-          { ...newVariant, id: Date.now().toString() },
-        ],
-      });
-      setNewVariant({ name: '', price: 0 });
+    try {
+      let result;
+      if (editingItem) {
+        result = await updateMenuItem(editingItem.id, formData); 
+      } else {
+        result = await addMenuItem(formData);
+      }
+      onItemAdded(result);
+      onClose();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const removeVariant = (variantId: string) => {
-    setFormData({
-      ...formData,
-      variants: formData.variants.filter(v => v.id !== variantId),
-    });
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ 
+      ...prev, 
+      [name]: name === 'price' ? Number(value) : value 
+    }));
+  };
+
+  const addTag = () => {
+    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        tags: [...prev.tags, newTag.trim()]
+      }));
+      setNewTag('');
+    }
+  };
+
+  const removeTag = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.filter((_, i) => i !== index)
+    }));
   };
 
   if (!isOpen) return null;
@@ -89,7 +95,6 @@ const MenuItemModal = ({ isOpen, onClose, editingItem }: MenuItemModalProps) => 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white w-full max-w-md rounded-lg shadow-lg relative max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="sticky top-0 bg-white p-6 pb-4 border-b flex justify-between items-center">
           <h2 className="text-xl font-bold">
             {editingItem ? 'Edit Menu Item' : 'Add New Menu Item'}
@@ -97,148 +102,133 @@ const MenuItemModal = ({ isOpen, onClose, editingItem }: MenuItemModalProps) => 
           <button 
             onClick={onClose} 
             className="text-gray-500 hover:text-orange-500 transition-colors"
+            disabled={isSubmitting}
+            aria-label="Close modal"
           >
             <FaTimes size={20} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Item Name */}
+          {error && (
+            <div className="bg-red-50 border-l-4 border-red-500 p-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              Item Name
+              Item Name *
             </label>
             <input
               id="name"
+              name="name"
+              type="text"
               value={formData.name}
-              onChange={e => handleInputChange('name', e.target.value)}
+              onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
               required
+              disabled={isSubmitting}
             />
           </div>
 
-          {/* Description */}
           <div>
             <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
               Description
             </label>
             <textarea
               id="description"
+              name="description"
               rows={3}
               value={formData.description}
-              onChange={e => handleInputChange('description', e.target.value)}
+              onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              disabled={isSubmitting}
             />
           </div>
 
-          {/* Price & Prep Time */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Price (₹)
-              </label>
-              <input
-                type="number"
-                min="0"
-                value={formData.price}
-                onChange={e => handleInputChange('price', Number(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Prep Time (min)
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={formData.preparationTime}
-                onChange={e => handleInputChange('preparationTime', Number(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                required
-              />
-            </div>
-          </div>
-
-          {/* Category */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Category
+            <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
+              Price (₹) *
             </label>
-            <select
-              value={formData.category}
-              onChange={e => handleInputChange('category', e.target.value)}
+            <input
+              id="price"
+              name="price"
+              type="number"
+              min="0"
+              step="0.01"
+              value={formData.price}
+              onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
               required
-            >
-              <option value="">Select category</option>
-              {categories.filter(cat => cat !== 'All').map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
+              disabled={isSubmitting}
+            />
           </div>
 
-          {/* Image URL */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-1">
               Image URL
             </label>
             <input
+              id="imageUrl"
+              name="imageUrl"
               type="text"
-              value={formData.image}
-              onChange={e => handleInputChange('image', e.target.value)}
+              value={formData.imageUrl}
+              onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
               placeholder="/placeholder.svg"
+              disabled={isSubmitting}
             />
           </div>
 
-          {/* Variants Section */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Variants
+            <label htmlFor="newTag" className="block text-sm font-medium text-gray-700 mb-2">
+              Tags
             </label>
             <div className="space-y-2">
-              {formData.variants.map((variant) => (
+              {formData.tags.map((tag, index) => (
                 <div
-                  key={variant.id}
+                  key={`${tag}-${index}`}
                   className="flex items-center justify-between bg-gray-50 p-2 rounded"
                 >
-                  <span className="text-sm">
-                    {variant.name} - ₹{variant.price}
-                  </span>
+                  <span className="text-sm">{tag}</span>
                   <button
                     type="button"
-                    onClick={() => removeVariant(variant.id)}
+                    onClick={() => removeTag(index)}
                     className="text-orange-600 hover:text-orange-800 transition-colors"
+                    disabled={isSubmitting}
+                    aria-label={`Remove tag ${tag}`}
                   >
                     <FaTrash size={14} />
                   </button>
                 </div>
               ))}
-              <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex gap-2">
                 <input
+                  id="newTag"
                   type="text"
-                  placeholder="Variant name"
-                  value={newVariant.name}
-                  onChange={(e) => setNewVariant({ ...newVariant, name: e.target.value })}
+                  placeholder="Add tag"
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
-                />
-                <input
-                  type="number"
-                  placeholder="Price"
-                  min="0"
-                  value={newVariant.price || ''}
-                  onChange={(e) => setNewVariant({
-                    ...newVariant,
-                    price: parseFloat(e.target.value) || 0,
-                  })}
-                  className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
+                  disabled={isSubmitting}
                 />
                 <button
                   type="button"
-                  onClick={addVariant}
+                  onClick={addTag}
                   className="px-3 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors flex items-center justify-center"
+                  disabled={isSubmitting || !newTag.trim()}
+                  aria-label="Add tag"
                 >
                   <FaPlus size={14} />
                 </button>
@@ -246,42 +236,31 @@ const MenuItemModal = ({ isOpen, onClose, editingItem }: MenuItemModalProps) => 
             </div>
           </div>
 
-          {/* Switches */}
-          <div className="flex items-center justify-between pt-2">
-            <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={formData.isVeg}
-                onChange={(e) => handleInputChange('isVeg', e.target.checked)}
-                className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
-              />
-              <span className="text-sm font-medium text-gray-700">Vegetarian</span>
-            </label>
-            <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={formData.isAvailable}
-                onChange={(e) => handleInputChange('isAvailable', e.target.checked)}
-                className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
-              />
-              <span className="text-sm font-medium text-gray-700">Available</span>
-            </label>
-          </div>
-
-          {/* Buttons */}
           <div className="flex space-x-3 pt-6">
             <button
               type="button"
               onClick={onClose}
               className="flex-1 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
+              disabled={isSubmitting}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
+              className="flex-1 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors flex items-center justify-center"
+              disabled={isSubmitting}
             >
-              {editingItem ? 'Update' : 'Add'} Item
+              {isSubmitting ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  {editingItem ? 'Updating...' : 'Adding...'}
+                </>
+              ) : (
+                editingItem ? 'Update' : 'Add'
+              )}
             </button>
           </div>
         </form>

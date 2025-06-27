@@ -1,51 +1,61 @@
-import { useState, useEffect, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import { useAppSelector, useAppDispatch } from '../../hooks/useAppSelector';
-import { clearNotification, updateOrderStatus } from '../../../../store/slices/orderSlice';
-import { FaTimes, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
+import { useAppSelector, useAppDispatch } from "../../hooks/useAppSelector";
+import {
+  clearNotification,
+  updateOrderStatus,
+} from "../../../../store/slices/orderSlice";
+import { FaTimes, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+// import { Socket } from "socket.io-client";
+import { websocketService } from "../../../../services/websocket";
 
 const OrderNotification = () => {
   const dispatch = useAppDispatch();
-  const notifications = useAppSelector(state => state.orders.notifications);
+  const notifications = useAppSelector((state) => state.orders.notifications);
   const [visibleNotifications, setVisibleNotifications] = useState<string[]>([]);
 
-  const handleDismiss = useCallback((orderId: string) => {
-    setVisibleNotifications(prev => prev.filter(id => id !== orderId));
-    setTimeout(() => {
-      dispatch(clearNotification(orderId));
-    }, 300);
-  }, [dispatch]);
+  const handleDismiss = useCallback(
+    (orderId: string) => {
+      setVisibleNotifications((prev) => prev.filter((id) => id !== orderId));
+      setTimeout(() => {
+        dispatch(clearNotification(orderId));
+      }, 300); // Allows fade-out animation if you add one
+    },
+    [dispatch]
+  );
 
   useEffect(() => {
     if (notifications.length > 0) {
       const newNotification = notifications[notifications.length - 1];
-      if (!visibleNotifications.includes(newNotification.id)) {
-        setVisibleNotifications(prev => [...prev, newNotification.id]);
-        setTimeout(() => handleDismiss(newNotification.id), 10000);
+      // Only add to visibleNotifications if it's a new, unique notification
+      if (!visibleNotifications.includes(newNotification._id)) {
+        setVisibleNotifications((prev) => [...prev, newNotification._id]);
+        // Set a timeout for auto-dismissal after 10 seconds
+        setTimeout(() => handleDismiss(newNotification._id), 10000);
       }
     }
   }, [notifications, visibleNotifications, handleDismiss]);
 
   const handleAccept = (orderId: string) => {
-    dispatch(updateOrderStatus({ id: orderId, status: 'accepted' }));
+    dispatch(updateOrderStatus({ id: orderId, status: "accepted" }));
+    websocketService.handleOrderAccept(orderId);
     handleDismiss(orderId);
   };
 
   const handleReject = (orderId: string) => {
-    dispatch(updateOrderStatus({ id: orderId, status: 'rejected' }));
+    dispatch(updateOrderStatus({ id: orderId, status: "rejected" }));
+    websocketService.handleOrderReject(orderId);
     handleDismiss(orderId);
   };
 
-  const visibleOrders = notifications.filter(order =>
+  const visibleOrders = notifications.filter((order) =>
     visibleNotifications.includes(order.id)
   );
 
   if (visibleOrders.length === 0) return null;
 
   return createPortal(
-    <div 
-      className="fixed inset-x-0 top-4 z-50 flex flex-col items-center space-y-4 px-4 sm:items-end sm:px-6 pointer-events-none"
-    >
+    <div className="fixed inset-x-0 top-4 z-50 flex flex-col items-center space-y-4 px-4 sm:items-end sm:px-6 pointer-events-none">
       {visibleOrders.map((order) => (
         <div
           key={order.id}
@@ -72,16 +82,16 @@ const OrderNotification = () => {
           {/* Order Details */}
           <div className="space-y-2 mb-4">
             <div className="flex justify-between text-sm text-gray-600">
-              <span>Customer:</span>
-              <span className="font-medium text-gray-900">{order.customerName}</span>
-            </div>
-            <div className="flex justify-between text-sm text-gray-600">
-              <span>Phone:</span>
-              <span>{order.customerPhone}</span>
+              <span>User ID:</span>
+              <span className="font-medium text-gray-900">{order.userId}</span>
             </div>
             <div className="flex justify-between text-sm text-gray-600">
               <span>Total:</span>
-              <span className="font-semibold text-green-600">₹{order.totalAmount}</span>
+              <span className="font-semibold text-green-600">₹{order.total}</span>
+            </div>
+            <div className="flex justify-between text-sm text-gray-600">
+              <span>Tax:</span>
+              <span>₹{order.tax ?? 0}</span>
             </div>
           </div>
 
@@ -89,9 +99,12 @@ const OrderNotification = () => {
           <div className="mb-4">
             <h4 className="text-sm font-medium text-gray-900 mb-2">Items:</h4>
             <div className="space-y-1 text-sm">
-              {order.items.map((item) => (
-                <div key={item.id} className="flex justify-between">
-                  <span>{item.name} x{item.quantity}</span>
+              {order.items.map((item: any) => (
+                <div key={item._id} className="flex justify-between">
+                  {" "}
+                  <span>
+                    {item.name} x{item.quantity}
+                  </span>
                   <span>₹{item.price * item.quantity}</span>
                 </div>
               ))}

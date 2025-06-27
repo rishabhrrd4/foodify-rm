@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { loginManager } from "../manager/auth/managerAuthService";
 
 export default function ManagerLoginPage() {
   const [formData, setFormData] = useState({
@@ -16,11 +16,13 @@ export default function ManagerLoginPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: type === "checkbox" ? checked : value,
-    });
+    }));
   };
+
+  const rId = localStorage.getItem("restaurantId");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,23 +31,38 @@ export default function ManagerLoginPage() {
     setSuccess(false);
 
     try {
-      const response = await axios.post(
-        "http://localhost:3005/manager/login",
-        formData
+      await loginManager(
+        formData.email,
+        formData.password,
+        formData.rememberMe
       );
-      if (response.status === 200) {
-        const { token, manager } = response.data;
+      setSuccess(true);
 
-        // Save token to localStorage
-        localStorage.setItem("managerToken", token);
-        localStorage.setItem("managerId", manager.id); // or manager._id based on your backend
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
 
-        // Redirect based on restaurant registration status
-        if (!manager.restaurantRegistered) {
-          navigate("/restaurant-manager/info");
-        } else {
-          navigate("/restaurant");
-        }
+            localStorage.setItem("userLatitude", latitude.toString());
+            localStorage.setItem("userLongitude", longitude.toString());
+
+            if (rId === "") {
+              navigate("/restaurant");
+            } else {
+              navigate("/restaurant-manager/info");
+            }
+
+            // navigate("/restaurant-manager/info");
+          },
+          (geoError) => {
+            console.warn("Geolocation error:", geoError.message);
+            navigate("/restaurant-manager/info");
+          }
+        );
+      } else {
+        console.warn("Geolocation is not supported by this browser.");
+        navigate("/restaurant-manager/info");
       }
     } catch (err: any) {
       setError(err.response?.data?.message || "Login failed");
@@ -108,6 +125,16 @@ export default function ManagerLoginPage() {
         >
           {loading ? "Logging in..." : "Login"}
         </button>
+
+        <div className="text-center mt-4">
+          <button
+            type="button"
+            onClick={() => navigate("/manager/forgot-password")}
+            className="text-sm text-orange-600 hover:underline"
+          >
+            Forgot Password?
+          </button>
+        </div>
       </form>
     </div>
   );
