@@ -65,7 +65,7 @@ const Hero: React.FC = () => {
 
           {/* Right Card */}
           <div className="relative">
-            <div className="bg-white rounded-2xl shadow-xl p-8 transform hover:rotate-1 transition-transform duration-500">
+            <div className="bg-white rounded-2xl shadow-xl p-8 transform hover:rotate-3 transition-transform duration-500">
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="bg-orange-100 rounded-lg p-4 text-center">
                   <TrendingUp className="h-8 w-8 text-orange-500 mx-auto mb-2" />

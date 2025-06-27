@@ -48,9 +48,9 @@ export default function ManagerLoginPage() {
             localStorage.setItem("userLongitude", longitude.toString());
 
             if (rId === "") {
-              navigate("restaurant-manager/info");
-            } else {
               navigate("/restaurant");
+            } else {
+              navigate("/restaurant-manager/info");
             }
 
             // navigate("/restaurant-manager/info");
