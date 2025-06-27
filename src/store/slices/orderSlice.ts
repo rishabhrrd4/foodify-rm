@@ -1,8 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
+// Order item type
 export interface OrderItem {
-  id: string;
   name: string;
   quantity: number;
   price: number;
@@ -14,11 +14,7 @@ export type Order = {
   _id: string; // This is the ID you're using in your notification component
   userId: string;
   restaurantId: string;
-  items: {
-    name: string;
-    quantity: number;
-    price: number;
-  }[];
+  items: OrderItem[];
   itemTotal: number;
   tax: number;
   platformFee: number;
@@ -38,6 +34,7 @@ export type Order = {
     | "rejected";
 };
 
+// State shape
 interface OrderState {
   activeOrders: Order[];
   orderHistory: Order[];
@@ -45,6 +42,7 @@ interface OrderState {
   isLoading: boolean;
 }
 
+// Initial state
 const initialState: OrderState = {
   activeOrders: [
     // IMPORTANT: You need to update these initial orders to match the new 'Order' type (_id instead of id)
@@ -110,6 +108,7 @@ const initialState: OrderState = {
   isLoading: false,
 };
 
+// Create slice
 const orderSlice = createSlice({
   name: "orders",
   initialState,
@@ -132,7 +131,10 @@ const orderSlice = createSlice({
         (order) => order._id === action.payload.id // Changed from order.id to order._id
       );
       if (order) {
+        // @ts-ignore - attach status dynamically if needed
         order.status = action.payload.status;
+
+        // Move to history if final state
         if (
           action.payload.status === "delivered" ||
           action.payload.status === "rejected"
