@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast, Toaster } from "react-hot-toast";
 
+
 interface Complaint {
   _id: string; // complaintId
   orderId: string;
@@ -12,12 +13,18 @@ interface Complaint {
 const FeedbackHistory: React.FC = () => {
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [loading, setLoading] = useState(true);
+  const accessToken=localStorage.getItem("managerAccessToken");
+  console.log(accessToken);
+  
 
-  // ✅ Fetch all complaints
   useEffect(() => {
     const fetchComplaints = async () => {
       try {
-        const res = await axios.get("http://localhost:3005/complaints/manager");
+        const res = await axios.get("http://localhost:3005/complaints/manager",{
+          headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+        });
         setComplaints(res.data);
       } catch (err) {
         console.error(err);
